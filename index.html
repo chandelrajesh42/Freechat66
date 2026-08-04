@@ -3,106 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorldChat - Global Chatrooms & Earning Ads</title>
-    <!-- Firebase JS SDK (v8 Standalone) -->
+    <title>WorldChat - Global Rooms</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        body { background: #f1f5f9; color: #1e293b; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        html, body { height: 100vh; width: 100vw; overflow: hidden; background: #f0f4f8; color: #334155; }
+        body { display: flex; flex-direction: column; }
         
-        /* HEADER & LOGO */
-        header { background: #ffffff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-        .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; color: #2563eb; letter-spacing: -0.5px; }
-        .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
-        
-        .user-profile-header { display: flex; align-items: center; gap: 12px; }
-        .user-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; }
-        .btn-logout { background: #fef2f2; color: #ef4444; border: 1px solid #fca5a5; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; }
-        .btn-logout:hover { background: #fee2e2; }
+        /* HEADER */
+        header { height: 55px; background: #ffffff; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+        .logo { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; color: #2563eb; }
+        .logo-icon { width: 32px; height: 32px; background: #2563eb; color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .user-profile-header { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; cursor: pointer; }
+        .btn-logout { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
 
-        /* MAIN APP LAYOUT */
-        .app-container { display: flex; flex: 1; height: calc(100vh - 63px); }
+        /* LAYOUT */
+        .app-container { display: flex; flex: 1; height: calc(100vh - 55px); overflow: hidden; }
         
-        /* LEFT SIDEBAR: COUNTRIES */
-        .sidebar { width: 250px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; }
-        .sidebar-title { padding: 14px 18px; font-size: 12px; font-weight: 700; color: #64748b; border-bottom: 1px solid #f1f5f9; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* SIDEBAR / ROOMS */
+        .sidebar { width: 140px; min-width: 140px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-title { padding: 10px; font-size: 11px; font-weight: 700; color: #64748b; border-bottom: 1px solid #f1f5f9; text-transform: uppercase; text-align: center; }
         .country-list { overflow-y: auto; flex: 1; }
-        .country-btn { width: 100%; padding: 12px 18px; border: none; background: transparent; text-align: left; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; color: #475569; font-size: 14px; transition: 0.2s; }
-        .country-btn:hover, .country-btn.active { background: #eff6ff; color: #2563eb; border-left: 4px solid #2563eb; }
+        .country-btn { width: 100%; padding: 10px; border: none; background: transparent; text-align: left; display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; font-size: 12px; color: #475569; border-bottom: 1px solid #f8fafc; }
+        .country-btn:hover, .country-btn.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
 
-        /* CENTER: MAIN CHAT AREA */
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: #f8fafc; }
-        .chat-header { padding: 14px 20px; background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+        /* CHAT AREA */
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #f8fafc; overflow: hidden; }
+        .chat-header { padding: 10px 15px; background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 15px; flex-shrink: 0; color: #1e293b; }
         
-        /* AD BANNER TOP OF CHAT */
-        .ad-banner-top { background: #f8fafc; padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; }
-
-        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         
-        .msg-card { display: flex; gap: 10px; background: #fff; padding: 10px 14px; border-radius: 12px; width: fit-content; max-width: 75%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; word-break: break-word; }
-        .msg-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        /* MESSAGE CARD */
+        .msg-card { display: flex; gap: 8px; background: #fff; padding: 8px 12px; border-radius: 10px; width: fit-content; max-width: 85%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; }
         .msg-info { font-size: 11px; color: #64748b; margin-bottom: 2px; }
-        .msg-author { font-weight: 700; color: #1e293b; }
-        .msg-text { font-size: 14px; color: #334155; line-height: 1.4; }
+        .msg-author { font-weight: 700; color: #1e293b; cursor: pointer; }
+        .msg-author:hover { text-decoration: underline; color: #2563eb; }
+        .msg-text { font-size: 13px; color: #334155; word-break: break-word; }
 
-        .chat-input-box { padding: 14px 20px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
-        .chat-input { flex: 1; padding: 11px 16px; border: 1px solid #cbd5e1; border-radius: 10px; outline: none; font-size: 14px; transition: 0.2s; }
-        .chat-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        .btn-send { background: #2563eb; color: white; border: none; padding: 0 22px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-send:hover { background: #1d4ed8; }
+        /* INPUT BOX */
+        .chat-input-box { padding: 10px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; flex-shrink: 0; }
+        .chat-input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 13px; }
+        .btn-send { background: #2563eb; color: white; border: none; padding: 0 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
 
-        /* RIGHT PANEL: ADS & RANDOM CHAT */
-        .right-panel { width: 280px; background: #fff; border-left: 1px solid #e2e8f0; padding: 18px; display: flex; flex-direction: column; gap: 18px; overflow-y: auto; }
-        .panel-box { background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; }
-        .panel-box h4 { margin-bottom: 8px; color: #0f172a; font-size: 14px; font-weight: 700; text-align: left; }
-        .btn-random { width: 100%; padding: 10px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px; }
-        .btn-random:hover { background: #059669; }
-        
-        /* ADVERTISEMENT SLOT STYLE */
-        .ad-slot { background: #e2e8f0; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px; color: #64748b; font-size: 12px; font-weight: 600; margin-top: 8px; }
-
-        /* LOGIN MODAL */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; }
-        .login-box { background: #fff; padding: 30px; border-radius: 16px; width: 360px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .login-box h3 { margin-bottom: 18px; color: #0f172a; font-size: 20px; font-weight: 800; }
-        .login-box input[type="text"], .login-box input[type="date"], .login-box input[type="file"] { width: 100%; padding: 10px; margin-bottom: 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
-        .file-label { display: block; text-align: left; font-size: 12px; margin-bottom: 5px; color: #64748b; font-weight: 600; }
-
-        @media (max-width: 768px) {
-            .sidebar { width: 75px; }
-            .sidebar-title, .country-btn span { display: none; }
-            .right-panel { display: none; }
-        }
+        /* MODALS */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+        .modal-box { background: #fff; padding: 20px; border-radius: 12px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }
+        .modal-box h3 { margin-bottom: 12px; color: #1e293b; }
+        .modal-box input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
+        .file-label { display: block; text-align: left; font-size: 11px; margin-bottom: 4px; color: #64748b; font-weight: 600; }
+        .close-modal { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 18px; cursor: pointer; color: #64748b; }
+        .profile-img-lg { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
     <!-- LOGIN MODAL -->
     <div class="modal-overlay" id="loginModal">
-        <div class="login-box">
-            <div class="logo-icon" style="margin:0 auto 12px auto;">⚡</div>
-            <h3>Join WorldChat</h3>
-            <span class="file-label">Select Profile Photo:</span>
+        <div class="modal-box">
+            <h3>Welcome to WorldChat</h3>
+            <span class="file-label">Profile Photo:</span>
             <input type="file" id="picInput" accept="image/*">
-            <input type="text" id="nameInput" placeholder="Enter Your Nickname">
+            <input type="text" id="nameInput" placeholder="Enter Your Name">
             <span class="file-label">Date of Birth:</span>
             <input type="date" id="dobInput">
-            <button class="btn-send" style="width:100%; padding:12px; margin-top:5px;" onclick="saveUser()">Start Chatting</button>
+            <button class="btn-send" style="width:100%; padding:10px; margin-top:5px;" onclick="saveUser()">Join Chat</button>
         </div>
     </div>
 
-    <!-- MAIN HEADER -->
+    <!-- USER PROFILE VIEW MODAL -->
+    <div class="modal-overlay" id="profileModal" style="display: none;">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeProfileModal()">✕</button>
+            <img id="viewUserPic" src="" class="profile-img-lg">
+            <h3 id="viewUserName">User Name</h3>
+            <p id="viewUserDob" style="font-size: 13px; color: #64748b; margin-top: 5px;">DOB: --/--/----</p>
+        </div>
+    </div>
+
+    <!-- HEADER -->
     <header>
         <div class="logo">
             <div class="logo-icon">⚡</div>
             <span>WorldChat</span>
         </div>
         <div class="user-profile-header">
-            <img id="userHeaderPic" src="https://via.placeholder.com/38" class="user-avatar" alt="Avatar">
+            <img id="userHeaderPic" src="https://via.placeholder.com/32" class="user-avatar" onclick="openMyProfile()">
             <div>
-                <div id="userHeaderName" style="font-weight:700; font-size:14px;">Guest</div>
-                <div id="userHeaderDob" style="font-size:11px; color:#64748b;">DOB: --/--/----</div>
+                <div id="userHeaderName" style="font-weight:700; font-size:12px;">Guest</div>
             </div>
             <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
@@ -112,50 +102,23 @@
     <div class="app-container">
         <!-- SIDEBAR -->
         <div class="sidebar">
-            <div class="sidebar-title">Global Chatrooms (25)</div>
+            <div class="sidebar-title">Chatrooms (25)</div>
             <div class="country-list" id="countryList"></div>
         </div>
 
-        <!-- MAIN CHATROOM -->
+        <!-- CHAT AREA -->
         <div class="chat-area">
             <div class="chat-header" id="currentRoomTitle">🌐 India Chatroom</div>
-            
-            <!-- AD BANNER (TOP) - Yahan Ad Code paste hoga -->
-            <div class="ad-banner-top">
-                <span>Advertisement</span>
-                <!-- Yahan Apna Ad Code Dalein -->
-                <div style="font-size: 10px; color: #cbd5e1;">[ AdSense / Adsterra Header Banner ]</div>
-            </div>
-
             <div class="chat-messages" id="chatMessages"></div>
             
             <div class="chat-input-box">
-                <input type="text" id="msgInput" class="chat-input" placeholder="Type a message... (Anti-spam active)">
+                <input type="text" id="msgInput" class="chat-input" placeholder="Type a message...">
                 <button class="btn-send" onclick="sendMessage()">Send</button>
-            </div>
-        </div>
-
-        <!-- RIGHT PANEL (RANDOM CHAT & ADS) -->
-        <div class="right-panel">
-            <div class="panel-box" style="text-align: left;">
-                <h4>🔀 Random Private Chat</h4>
-                <p style="font-size:12px; color:#64748b; margin-bottom:12px; line-height:1.4;">Connect 1-on-1 with a random stranger globally.</p>
-                <button class="btn-random" onclick="findRandomMatch()">Shuffle Random Chat</button>
-            </div>
-
-            <!-- AD BOX (SIDEBAR) -->
-            <div class="panel-box">
-                <h4 style="font-size:12px; color:#94a3b8; margin-bottom:4px;">SPONSORED</h4>
-                <div class="ad-slot">
-                    Your Ad Banner Here<br>
-                    <span style="font-size: 10px; font-weight: normal;">(Earn Money)</span>
-                </div>
             </div>
         </div>
     </div>
 
 <script>
-    // --- FIREBASE CONFIGURATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyAz2WOC9A7nGq2dVRNIT0BKo9sPcc1z08k",
       authDomain: "free-chat66.firebaseapp.com",
@@ -173,16 +136,15 @@
     let currentUser = { name: "", dob: "", pic: "" };
     let currentRoom = "India";
     let lastSentMessage = "";
-    let lastSentTime = 0;
 
     const countries = ["India", "USA", "UK", "Canada", "Brazil", "Japan", "Germany", "France", "Russia", "Australia", "Italy", "Spain", "Mexico", "China", "South Korea", "South Africa", "Nigeria", "Argentina", "Indonesia", "Saudi Arabia", "Turkey", "Egypt", "Pakistan", "Nepal", "Bangladesh"];
 
-    // Render Country Buttons
+    // Populate Sidebar Countries
     const countryListEl = document.getElementById('countryList');
     countries.forEach((country, index) => {
         const btn = document.createElement('button');
         btn.className = `country-btn ${index === 0 ? 'active' : ''}`;
-        btn.innerHTML = `🌐 <span>${country}</span>`;
+        btn.innerHTML = `<span>🌐</span> <span>${country}</span>`;
         btn.onclick = () => switchRoom(country, btn);
         countryListEl.appendChild(btn);
     });
@@ -193,7 +155,7 @@
         const picFile = document.getElementById('picInput').files[0];
 
         if (!name || !dob) {
-            alert("⚠️ Please enter both your Name and Date of Birth!");
+            alert("Name aur DOB dono daalna zaroori hai!");
             return;
         }
 
@@ -216,7 +178,6 @@
     function finishLogin() {
         document.getElementById('loginModal').style.display = "none";
         document.getElementById('userHeaderName').innerText = currentUser.name;
-        document.getElementById('userHeaderDob').innerText = `DOB: ${currentUser.dob}`;
         document.getElementById('userHeaderPic').src = currentUser.pic;
         listenToRoom(currentRoom);
     }
@@ -231,12 +192,11 @@
         listenToRoom(room);
     }
 
-    // MEMORY OPTIMIZATION: Sirf last 25 msgs load honge taaki site hang na ho
     function listenToRoom(room) {
         const chatBox = document.getElementById('chatMessages');
         chatBox.innerHTML = "";
-        db.ref('rooms/' + room).limitToLast(25).off();
-        db.ref('rooms/' + room).limitToLast(25).on('child_added', (snapshot) => {
+        db.ref('rooms/' + room).limitToLast(40).off();
+        db.ref('rooms/' + room).limitToLast(40).on('child_added', (snapshot) => {
             appendMessage(snapshot.val());
         });
     }
@@ -244,19 +204,10 @@
     function sendMessage() {
         const input = document.getElementById('msgInput');
         const text = input.value.trim();
-        const now = Date.now();
 
         if (!text) return;
-
-        // ANTI-SPAM CONTROL 1: Same Message Lock
         if (text === lastSentMessage) {
-            alert("🚫 Anti-Spam: Aap same message repeat nahi kar sakte!");
-            return;
-        }
-
-        // ANTI-SPAM CONTROL 2: Slow Down Fast Typing (2 sec delay)
-        if (now - lastSentTime < 2000) {
-            alert("⏳ Anti-Spam: Please wait 2 seconds between messages!");
+            alert("⚠️ Same message repeat na karein!");
             return;
         }
 
@@ -265,12 +216,11 @@
             dob: currentUser.dob,
             pic: currentUser.pic,
             text: text,
-            timestamp: now
+            timestamp: Date.now()
         };
 
         db.ref('rooms/' + currentRoom).push(msgData);
         lastSentMessage = text;
-        lastSentTime = now;
         input.value = "";
     }
 
@@ -278,29 +228,44 @@
         const chatBox = document.getElementById('chatMessages');
         const msgDiv = document.createElement('div');
         msgDiv.className = "msg-card";
+        
+        // Escape quotes to prevent breaks in inline functions
+        const safeName = data.sender.replace(/'/g, "\\'");
+        const safePic = data.pic;
+        const safeDob = data.dob;
+
         msgDiv.innerHTML = `
-            <img src="${data.pic}" class="msg-avatar">
+            <img src="${safePic}" class="msg-avatar" onclick="showUserProfile('${safeName}', '${safeDob}', '${safePic}')">
             <div>
-                <div class="msg-info"><span class="msg-author">${data.sender}</span> (DOB: ${data.dob})</div>
-                <div class="msg-text">${escapeHtml(data.text)}</div>
+                <div class="msg-info">
+                    <span class="msg-author" onclick="showUserProfile('${safeName}', '${safeDob}', '${safePic}')">${data.sender}</span>
+                </div>
+                <div class="msg-text">${data.text}</div>
             </div>
         `;
         chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.innerText = text;
-        return div.innerHTML;
+    // User details view modal trigger
+    function showUserProfile(name, dob, pic) {
+        document.getElementById('viewUserName').innerText = name;
+        document.getElementById('viewUserDob').innerText = `DOB: ${dob || 'Not Provided'}`;
+        document.getElementById('viewUserPic').src = pic;
+        document.getElementById('profileModal').style.display = 'flex';
     }
 
-    function findRandomMatch() {
-        alert("🔍 Searching for an available online user... Random private chat matching started!");
+    function openMyProfile() {
+        if(currentUser.name) {
+            showUserProfile(currentUser.name, currentUser.dob, currentUser.pic);
+        }
     }
 
-    // Enter key press send message
-    document.getElementById('msgInput')?.addEventListener('keypress', function (e) {
+    function closeProfileModal() {
+        document.getElementById('profileModal').style.display = 'none';
+    }
+
+    document.getElementById('msgInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') sendMessage();
     });
 </script>
