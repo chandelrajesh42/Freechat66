@@ -10,14 +10,13 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         html, body { height: 100%; width: 100%; overflow: hidden; background: #f8fafc; }
         
-        /* APP CONTAINER */
         .app-main { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; }
 
         /* HEADER */
         header { height: 50px; background: #ffffff; padding: 0 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
         .logo { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 800; color: #2563eb; }
         .logo-icon { width: 28px; height: 28px; background: #2563eb; color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .user-profile-header { display: flex; align-items: center; gap: 8px; }
+        .user-profile-header { display: flex; align-items: center; gap: 6px; }
         .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; cursor: pointer; }
         .btn-logout { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px; }
 
@@ -25,23 +24,32 @@
         .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
         
         /* SIDEBAR / ROOMS */
-        .sidebar { width: 100px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar { width: 115px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-title { padding: 8px 4px; font-size: 10px; font-weight: 700; color: #64748b; border-bottom: 1px solid #f1f5f9; text-align: center; text-transform: uppercase; }
         .country-list { overflow-y: auto; flex: 1; }
-        .country-btn { width: 100%; padding: 8px 6px; border: none; background: transparent; text-align: left; display: flex; align-items: center; gap: 4px; cursor: pointer; font-weight: 600; font-size: 11px; color: #475569; border-bottom: 1px solid #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .country-btn { width: 100%; padding: 8px 6px; border: none; background: transparent; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 600; font-size: 11px; color: #475569; border-bottom: 1px solid #f8fafc; }
         .country-btn.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
+        .room-badge { background: #e2e8f0; color: #475569; font-size: 9px; padding: 1px 5px; border-radius: 10px; font-weight: 700; }
+        .country-btn.active .room-badge { background: #2563eb; color: #fff; }
 
         /* CHAT AREA */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; height: 100%; overflow: hidden; }
-        .chat-header { padding: 8px 12px; background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 13px; color: #1e293b; flex-shrink: 0; }
+        .chat-header { padding: 6px 12px; background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 12px; color: #1e293b; flex-shrink: 0; }
+        
+        /* ACTIVE USERS BAR IN ROOM */
+        .active-users-bar { background: #f8fafc; padding: 4px 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px; overflow-x: auto; flex-shrink: 0; min-height: 28px; }
+        .active-user-tag { background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 2px 8px; font-size: 10px; display: flex; align-items: center; gap: 4px; white-space: nowrap; cursor: pointer; }
         
         /* MESSAGES LIST */
         .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .msg-card { display: flex; gap: 6px; background: #fff; padding: 6px 10px; border-radius: 8px; width: fit-content; max-width: 88%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .msg-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; cursor: pointer; flex-shrink: 0; }
-        .msg-info { font-size: 10px; color: #64748b; margin-bottom: 2px; }
+        .msg-info { font-size: 10px; color: #64748b; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
         .msg-author { font-weight: 700; color: #1e293b; cursor: pointer; }
         .msg-text { font-size: 12px; color: #334155; word-break: break-word; }
+
+        .gender-icon-m { color: #2563eb; font-weight: 800; }
+        .gender-icon-f { color: #ec4899; font-weight: 800; }
 
         /* FIXED BOTTOM INPUT BAR */
         .chat-input-box { padding: 8px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 6px; flex-shrink: 0; }
@@ -52,7 +60,7 @@
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 15px; }
         .modal-box { background: #fff; padding: 18px; border-radius: 12px; width: 100%; max-width: 300px; text-align: center; position: relative; }
         .modal-box h3 { margin-bottom: 10px; color: #1e293b; font-size: 16px; }
-        .modal-box input { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }
+        .modal-box input, .modal-box select { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; background: #fff; }
         .file-label { display: block; text-align: left; font-size: 10px; margin-bottom: 2px; color: #64748b; font-weight: 600; }
         .close-modal { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 16px; cursor: pointer; color: #64748b; }
         .profile-img-lg { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; margin-bottom: 8px; }
@@ -68,6 +76,11 @@
                 <span class="file-label">Profile Photo:</span>
                 <input type="file" id="picInput" accept="image/*">
                 <input type="text" id="nameInput" placeholder="Enter Your Name">
+                <span class="file-label">Gender:</span>
+                <select id="genderInput">
+                    <option value="Male">Male ♂</option>
+                    <option value="Female">Female ♀</option>
+                </select>
                 <span class="file-label">Date of Birth:</span>
                 <input type="date" id="dobInput">
                 <button class="btn-send" style="width:100%; padding:8px; margin-top:4px;" onclick="saveUser()">Join Chat</button>
@@ -80,7 +93,8 @@
                 <button class="close-modal" onclick="closeProfileModal()">✕</button>
                 <img id="viewUserPic" src="" class="profile-img-lg">
                 <h3 id="viewUserName">User Name</h3>
-                <p id="viewUserDob" style="font-size: 12px; color: #64748b; margin-top: 4px;">DOB: --/--/----</p>
+                <p id="viewUserGender" style="font-size: 12px; font-weight: 700; margin-top: 2px;"></p>
+                <p id="viewUserDob" style="font-size: 12px; color: #64748b; margin-top: 2px;">DOB: --/--/----</p>
             </div>
         </div>
 
@@ -100,12 +114,18 @@
         <!-- BODY -->
         <div class="app-body">
             <div class="sidebar">
-                <div class="sidebar-title">Rooms (25)</div>
+                <div class="sidebar-title">Rooms</div>
                 <div class="country-list" id="countryList"></div>
             </div>
 
             <div class="chat-area">
-                <div class="chat-header" id="currentRoomTitle">🌐 Saudi Arabia Chatroom</div>
+                <div class="chat-header" id="currentRoomTitle">🌐 India Chatroom</div>
+                
+                <!-- ONLINE USERS LIST IN CURRENT ROOM -->
+                <div class="active-users-bar" id="activeUsersBar">
+                    <span style="font-size: 10px; color: #64748b; font-weight: 700;">Online:</span>
+                </div>
+
                 <div class="chat-messages" id="chatMessages"></div>
                 
                 <div class="chat-input-box">
@@ -131,23 +151,31 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let currentUser = { name: "", dob: "", pic: "" };
-    let currentRoom = "Saudi Arabia";
+    let currentUser = { id: "", name: "", gender: "Male", dob: "", pic: "" };
+    let currentRoom = "India";
     let lastSentMessage = "";
+    let userPresenceRef = null;
 
     const countries = ["India", "USA", "UK", "Canada", "Brazil", "Japan", "Germany", "France", "Russia", "Australia", "Italy", "Spain", "Mexico", "China", "South Korea", "South Africa", "Nigeria", "Argentina", "Indonesia", "Saudi Arabia", "Turkey", "Egypt", "Pakistan", "Nepal", "Bangladesh"];
 
-    const countryListEl = document.getElementById('countryList');
-    countries.forEach((country) => {
-        const btn = document.createElement('button');
-        btn.className = `country-btn ${country === currentRoom ? 'active' : ''}`;
-        btn.innerHTML = `🌐 ${country}`;
-        btn.onclick = () => switchRoom(country, btn);
-        countryListEl.appendChild(btn);
-    });
+    // Initialize Sidebar
+    function renderSidebar() {
+        const countryListEl = document.getElementById('countryList');
+        countryListEl.innerHTML = "";
+        countries.forEach((country) => {
+            const btn = document.createElement('button');
+            btn.className = `country-btn ${country === currentRoom ? 'active' : ''}`;
+            btn.id = `room-btn-${country.replace(/\s+/g, '')}`;
+            btn.innerHTML = `<span>🌐 ${country}</span> <span class="room-badge" id="badge-${country.replace(/\s+/g, '')}">0</span>`;
+            btn.onclick = () => switchRoom(country, btn);
+            countryListEl.appendChild(btn);
+        });
+    }
+    renderSidebar();
 
     function saveUser() {
         const name = document.getElementById('nameInput').value.trim();
+        const gender = document.getElementById('genderInput').value;
         const dob = document.getElementById('dobInput').value;
         const picFile = document.getElementById('picInput').files[0];
 
@@ -156,7 +184,9 @@
             return;
         }
 
+        currentUser.id = 'user_' + Math.random().toString(36).substr(2, 9);
         currentUser.name = name;
+        currentUser.gender = gender;
         currentUser.dob = dob;
 
         if (picFile) {
@@ -176,20 +206,82 @@
         document.getElementById('loginModal').style.display = "none";
         document.getElementById('userHeaderName').innerText = currentUser.name;
         document.getElementById('userHeaderPic').src = currentUser.pic;
-        listenToRoom(currentRoom);
+        
+        setupPresence();
+        listenRoomCounts();
+        switchRoom(currentRoom);
     }
 
     function logout() { location.reload(); }
 
+    // Presence & Room tracking
+    function setupPresence() {
+        db.ref('.info/connected').on('value', (snapshot) => {
+            if (snapshot.val() === true) {
+                updateUserRoomPresence();
+            }
+        });
+    }
+
+    function updateUserRoomPresence() {
+        if (!currentUser.id) return;
+        
+        if (userPresenceRef) {
+            userPresenceRef.remove();
+        }
+
+        userPresenceRef = db.ref(`presence/${currentRoom}/${currentUser.id}`);
+        userPresenceRef.set({
+            name: currentUser.name,
+            gender: currentUser.gender,
+            dob: currentUser.dob,
+            pic: currentUser.pic
+        });
+        userPresenceRef.onDisconnect().remove();
+    }
+
+    function listenRoomCounts() {
+        countries.forEach((country) => {
+            const safeRoomId = country.replace(/\s+/g, '');
+            db.ref(`presence/${country}`).on('value', (snapshot) => {
+                const count = snapshot.numChildren() || 0;
+                const badge = document.getElementById(`badge-${safeRoomId}`);
+                if (badge) badge.innerText = count;
+            });
+        });
+    }
+
+    function listenCurrentRoomUsers() {
+        const activeUsersBar = document.getElementById('activeUsersBar');
+        db.ref(`presence/${currentRoom}`).on('value', (snapshot) => {
+            activeUsersBar.innerHTML = `<span style="font-size: 10px; color: #64748b; font-weight: 700;">Online (${snapshot.numChildren() || 0}):</span>`;
+            snapshot.forEach((child) => {
+                const u = child.val();
+                const gIcon = u.gender === 'Female' ? '<span class="gender-icon-f">♀</span>' : '<span class="gender-icon-m">♂</span>';
+                
+                const tag = document.createElement('div');
+                tag.className = 'active-user-tag';
+                tag.innerHTML = `${gIcon} ${u.name}`;
+                tag.onclick = () => showUserProfile(u.name, u.gender, u.dob, u.pic);
+                activeUsersBar.appendChild(tag);
+            });
+        });
+    }
+
     function switchRoom(room, btn) {
         currentRoom = room;
         document.querySelectorAll('.country-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        const activeBtn = btn || document.getElementById(`room-btn-${room.replace(/\s+/g, '')}`);
+        if(activeBtn) activeBtn.classList.add('active');
+        
         document.getElementById('currentRoomTitle').innerText = `🌐 ${room} Chatroom`;
-        listenToRoom(room);
+        
+        updateUserRoomPresence();
+        listenCurrentRoomUsers();
+        listenToRoomMessages(room);
     }
 
-    function listenToRoom(room) {
+    function listenToRoomMessages(room) {
         const chatBox = document.getElementById('chatMessages');
         chatBox.innerHTML = "";
         db.ref('rooms/' + room).limitToLast(30).off();
@@ -210,6 +302,7 @@
 
         const msgData = {
             sender: currentUser.name,
+            gender: currentUser.gender,
             dob: currentUser.dob,
             pic: currentUser.pic,
             text: text,
@@ -227,14 +320,18 @@
         msgDiv.className = "msg-card";
         
         const safeName = (data.sender || 'User').replace(/'/g, "\\'");
+        const safeGender = data.gender || 'Male';
         const safePic = data.pic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         const safeDob = data.dob || "";
 
+        const gIcon = safeGender === 'Female' ? '<span class="gender-icon-f">♀</span>' : '<span class="gender-icon-m">♂</span>';
+
         msgDiv.innerHTML = `
-            <img src="${safePic}" class="msg-avatar" onclick="showUserProfile('${safeName}', '${safeDob}', '${safePic}')">
+            <img src="${safePic}" class="msg-avatar" onclick="showUserProfile('${safeName}', '${safeGender}', '${safeDob}', '${safePic}')">
             <div>
                 <div class="msg-info">
-                    <span class="msg-author" onclick="showUserProfile('${safeName}', '${safeDob}', '${safePic}')">${data.sender}</span>
+                    <span class="msg-author" onclick="showUserProfile('${safeName}', '${safeGender}', '${safeDob}', '${safePic}')">${data.sender}</span>
+                    ${gIcon}
                 </div>
                 <div class="msg-text">${data.text}</div>
             </div>
@@ -243,8 +340,10 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function showUserProfile(name, dob, pic) {
+    function showUserProfile(name, gender, dob, pic) {
         document.getElementById('viewUserName').innerText = name;
+        const gLabel = gender === 'Female' ? '<span class="gender-icon-f">Female ♀</span>' : '<span class="gender-icon-m">Male ♂</span>';
+        document.getElementById('viewUserGender').innerHTML = gLabel;
         document.getElementById('viewUserDob').innerText = `DOB: ${dob || 'Not Provided'}`;
         document.getElementById('viewUserPic').src = pic;
         document.getElementById('profileModal').style.display = 'flex';
@@ -252,7 +351,7 @@
 
     function openMyProfile() {
         if(currentUser.name) {
-            showUserProfile(currentUser.name, currentUser.dob, currentUser.pic);
+            showUserProfile(currentUser.name, currentUser.gender, currentUser.dob, currentUser.pic);
         }
     }
 
