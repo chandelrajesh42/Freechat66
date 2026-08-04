@@ -2,118 +2,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WorldChat - Global Rooms</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        html, body { height: 100vh; width: 100vw; overflow: hidden; background: #f0f4f8; color: #334155; }
-        body { display: flex; flex-direction: column; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        html, body { height: 100%; width: 100%; overflow: hidden; background: #f8fafc; }
         
-        /* HEADER */
-        header { height: 55px; background: #ffffff; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
-        .logo { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; color: #2563eb; }
-        .logo-icon { width: 32px; height: 32px; background: #2563eb; color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        .user-profile-header { display: flex; align-items: center; gap: 8px; }
-        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; cursor: pointer; }
-        .btn-logout { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+        /* APP CONTAINER */
+        .app-main { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; }
 
-        /* LAYOUT */
-        .app-container { display: flex; flex: 1; height: calc(100vh - 55px); overflow: hidden; }
+        /* HEADER */
+        header { height: 50px; background: #ffffff; padding: 0 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+        .logo { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 800; color: #2563eb; }
+        .logo-icon { width: 28px; height: 28px; background: #2563eb; color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .user-profile-header { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; cursor: pointer; }
+        .btn-logout { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px; }
+
+        /* BODY LAYOUT */
+        .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
         
         /* SIDEBAR / ROOMS */
-        .sidebar { width: 140px; min-width: 140px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-title { padding: 10px; font-size: 11px; font-weight: 700; color: #64748b; border-bottom: 1px solid #f1f5f9; text-transform: uppercase; text-align: center; }
+        .sidebar { width: 100px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-title { padding: 8px 4px; font-size: 10px; font-weight: 700; color: #64748b; border-bottom: 1px solid #f1f5f9; text-align: center; text-transform: uppercase; }
         .country-list { overflow-y: auto; flex: 1; }
-        .country-btn { width: 100%; padding: 10px; border: none; background: transparent; text-align: left; display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; font-size: 12px; color: #475569; border-bottom: 1px solid #f8fafc; }
-        .country-btn:hover, .country-btn.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
+        .country-btn { width: 100%; padding: 8px 6px; border: none; background: transparent; text-align: left; display: flex; align-items: center; gap: 4px; cursor: pointer; font-weight: 600; font-size: 11px; color: #475569; border-bottom: 1px solid #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .country-btn.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
 
         /* CHAT AREA */
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: #f8fafc; overflow: hidden; }
-        .chat-header { padding: 10px 15px; background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 15px; flex-shrink: 0; color: #1e293b; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; height: 100%; overflow: hidden; }
+        .chat-header { padding: 8px 12px; background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 13px; color: #1e293b; flex-shrink: 0; }
         
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        
-        /* MESSAGE CARD */
-        .msg-card { display: flex; gap: 8px; background: #fff; padding: 8px 12px; border-radius: 10px; width: fit-content; max-width: 85%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; cursor: pointer; }
-        .msg-info { font-size: 11px; color: #64748b; margin-bottom: 2px; }
+        /* MESSAGES LIST */
+        .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .msg-card { display: flex; gap: 6px; background: #fff; padding: 6px 10px; border-radius: 8px; width: fit-content; max-width: 88%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .msg-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; cursor: pointer; flex-shrink: 0; }
+        .msg-info { font-size: 10px; color: #64748b; margin-bottom: 2px; }
         .msg-author { font-weight: 700; color: #1e293b; cursor: pointer; }
-        .msg-author:hover { text-decoration: underline; color: #2563eb; }
-        .msg-text { font-size: 13px; color: #334155; word-break: break-word; }
+        .msg-text { font-size: 12px; color: #334155; word-break: break-word; }
 
-        /* INPUT BOX */
-        .chat-input-box { padding: 10px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; flex-shrink: 0; }
-        .chat-input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 13px; }
-        .btn-send { background: #2563eb; color: white; border: none; padding: 0 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+        /* FIXED BOTTOM INPUT BAR */
+        .chat-input-box { padding: 8px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 6px; flex-shrink: 0; }
+        .chat-input { flex: 1; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 13px; }
+        .btn-send { background: #2563eb; color: white; border: none; padding: 0 14px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; }
 
         /* MODALS */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
-        .modal-box { background: #fff; padding: 20px; border-radius: 12px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }
-        .modal-box h3 { margin-bottom: 12px; color: #1e293b; }
-        .modal-box input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
-        .file-label { display: block; text-align: left; font-size: 11px; margin-bottom: 4px; color: #64748b; font-weight: 600; }
-        .close-modal { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 18px; cursor: pointer; color: #64748b; }
-        .profile-img-lg { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; margin-bottom: 10px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 15px; }
+        .modal-box { background: #fff; padding: 18px; border-radius: 12px; width: 100%; max-width: 300px; text-align: center; position: relative; }
+        .modal-box h3 { margin-bottom: 10px; color: #1e293b; font-size: 16px; }
+        .modal-box input { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }
+        .file-label { display: block; text-align: left; font-size: 10px; margin-bottom: 2px; color: #64748b; font-weight: 600; }
+        .close-modal { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 16px; cursor: pointer; color: #64748b; }
+        .profile-img-lg { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN MODAL -->
-    <div class="modal-overlay" id="loginModal">
-        <div class="modal-box">
-            <h3>Welcome to WorldChat</h3>
-            <span class="file-label">Profile Photo:</span>
-            <input type="file" id="picInput" accept="image/*">
-            <input type="text" id="nameInput" placeholder="Enter Your Name">
-            <span class="file-label">Date of Birth:</span>
-            <input type="date" id="dobInput">
-            <button class="btn-send" style="width:100%; padding:10px; margin-top:5px;" onclick="saveUser()">Join Chat</button>
-        </div>
-    </div>
-
-    <!-- USER PROFILE VIEW MODAL -->
-    <div class="modal-overlay" id="profileModal" style="display: none;">
-        <div class="modal-box">
-            <button class="close-modal" onclick="closeProfileModal()">✕</button>
-            <img id="viewUserPic" src="" class="profile-img-lg">
-            <h3 id="viewUserName">User Name</h3>
-            <p id="viewUserDob" style="font-size: 13px; color: #64748b; margin-top: 5px;">DOB: --/--/----</p>
-        </div>
-    </div>
-
-    <!-- HEADER -->
-    <header>
-        <div class="logo">
-            <div class="logo-icon">⚡</div>
-            <span>WorldChat</span>
-        </div>
-        <div class="user-profile-header">
-            <img id="userHeaderPic" src="https://via.placeholder.com/32" class="user-avatar" onclick="openMyProfile()">
-            <div>
-                <div id="userHeaderName" style="font-weight:700; font-size:12px;">Guest</div>
+    <div class="app-main">
+        <!-- LOGIN MODAL -->
+        <div class="modal-overlay" id="loginModal">
+            <div class="modal-box">
+                <h3>Welcome to WorldChat</h3>
+                <span class="file-label">Profile Photo:</span>
+                <input type="file" id="picInput" accept="image/*">
+                <input type="text" id="nameInput" placeholder="Enter Your Name">
+                <span class="file-label">Date of Birth:</span>
+                <input type="date" id="dobInput">
+                <button class="btn-send" style="width:100%; padding:8px; margin-top:4px;" onclick="saveUser()">Join Chat</button>
             </div>
-            <button class="btn-logout" onclick="logout()">Logout</button>
-        </div>
-    </header>
-
-    <!-- APP BODY -->
-    <div class="app-container">
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <div class="sidebar-title">Chatrooms (25)</div>
-            <div class="country-list" id="countryList"></div>
         </div>
 
-        <!-- CHAT AREA -->
-        <div class="chat-area">
-            <div class="chat-header" id="currentRoomTitle">🌐 India Chatroom</div>
-            <div class="chat-messages" id="chatMessages"></div>
-            
-            <div class="chat-input-box">
-                <input type="text" id="msgInput" class="chat-input" placeholder="Type a message...">
-                <button class="btn-send" onclick="sendMessage()">Send</button>
+        <!-- PROFILE VIEW MODAL -->
+        <div class="modal-overlay" id="profileModal" style="display: none;">
+            <div class="modal-box">
+                <button class="close-modal" onclick="closeProfileModal()">✕</button>
+                <img id="viewUserPic" src="" class="profile-img-lg">
+                <h3 id="viewUserName">User Name</h3>
+                <p id="viewUserDob" style="font-size: 12px; color: #64748b; margin-top: 4px;">DOB: --/--/----</p>
+            </div>
+        </div>
+
+        <!-- HEADER -->
+        <header>
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <span>WorldChat</span>
+            </div>
+            <div class="user-profile-header">
+                <img id="userHeaderPic" src="https://via.placeholder.com/28" class="user-avatar" onclick="openMyProfile()">
+                <div id="userHeaderName" style="font-weight:700; font-size:11px;">Guest</div>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- BODY -->
+        <div class="app-body">
+            <div class="sidebar">
+                <div class="sidebar-title">Rooms (25)</div>
+                <div class="country-list" id="countryList"></div>
+            </div>
+
+            <div class="chat-area">
+                <div class="chat-header" id="currentRoomTitle">🌐 Saudi Arabia Chatroom</div>
+                <div class="chat-messages" id="chatMessages"></div>
+                
+                <div class="chat-input-box">
+                    <input type="text" id="msgInput" class="chat-input" placeholder="Type a message...">
+                    <button class="btn-send" onclick="sendMessage()">Send</button>
+                </div>
             </div>
         </div>
     </div>
@@ -134,17 +132,16 @@
     const db = firebase.database();
 
     let currentUser = { name: "", dob: "", pic: "" };
-    let currentRoom = "India";
+    let currentRoom = "Saudi Arabia";
     let lastSentMessage = "";
 
     const countries = ["India", "USA", "UK", "Canada", "Brazil", "Japan", "Germany", "France", "Russia", "Australia", "Italy", "Spain", "Mexico", "China", "South Korea", "South Africa", "Nigeria", "Argentina", "Indonesia", "Saudi Arabia", "Turkey", "Egypt", "Pakistan", "Nepal", "Bangladesh"];
 
-    // Populate Sidebar Countries
     const countryListEl = document.getElementById('countryList');
-    countries.forEach((country, index) => {
+    countries.forEach((country) => {
         const btn = document.createElement('button');
-        btn.className = `country-btn ${index === 0 ? 'active' : ''}`;
-        btn.innerHTML = `<span>🌐</span> <span>${country}</span>`;
+        btn.className = `country-btn ${country === currentRoom ? 'active' : ''}`;
+        btn.innerHTML = `🌐 ${country}`;
         btn.onclick = () => switchRoom(country, btn);
         countryListEl.appendChild(btn);
     });
@@ -155,7 +152,7 @@
         const picFile = document.getElementById('picInput').files[0];
 
         if (!name || !dob) {
-            alert("Name aur DOB dono daalna zaroori hai!");
+            alert("Name aur DOB bharna zaroori hai!");
             return;
         }
 
@@ -195,8 +192,8 @@
     function listenToRoom(room) {
         const chatBox = document.getElementById('chatMessages');
         chatBox.innerHTML = "";
-        db.ref('rooms/' + room).limitToLast(40).off();
-        db.ref('rooms/' + room).limitToLast(40).on('child_added', (snapshot) => {
+        db.ref('rooms/' + room).limitToLast(30).off();
+        db.ref('rooms/' + room).limitToLast(30).on('child_added', (snapshot) => {
             appendMessage(snapshot.val());
         });
     }
@@ -207,7 +204,7 @@
 
         if (!text) return;
         if (text === lastSentMessage) {
-            alert("⚠️ Same message repeat na karein!");
+            alert("⚠️ Same message dobara nahi bhej sakte!");
             return;
         }
 
@@ -229,10 +226,9 @@
         const msgDiv = document.createElement('div');
         msgDiv.className = "msg-card";
         
-        // Escape quotes to prevent breaks in inline functions
-        const safeName = data.sender.replace(/'/g, "\\'");
-        const safePic = data.pic;
-        const safeDob = data.dob;
+        const safeName = (data.sender || 'User').replace(/'/g, "\\'");
+        const safePic = data.pic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        const safeDob = data.dob || "";
 
         msgDiv.innerHTML = `
             <img src="${safePic}" class="msg-avatar" onclick="showUserProfile('${safeName}', '${safeDob}', '${safePic}')">
@@ -247,7 +243,6 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // User details view modal trigger
     function showUserProfile(name, dob, pic) {
         document.getElementById('viewUserName').innerText = name;
         document.getElementById('viewUserDob').innerText = `DOB: ${dob || 'Not Provided'}`;
