@@ -29,15 +29,16 @@
 
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; height: 100%; overflow: hidden; position: relative; }
         .chat-header { padding: 6px 12px; background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 12px; color: #1e293b; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
-        .active-users-bar { background: #f8fafc; padding: 4px 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px; overflow-x: auto; flex-shrink: 0; min-height: 28px; }
-        .active-user-tag { background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 2px 8px; font-size: 10px; display: flex; align-items: center; gap: 4px; white-space: nowrap; cursor: pointer; }
+        .active-users-bar { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px; overflow-x: auto; flex-shrink: 0; min-height: 32px; }
+        .active-user-tag { background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 2px 8px; font-size: 10px; display: flex; align-items: center; gap: 4px; white-space: nowrap; cursor: pointer; font-weight: 600; }
 
         .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .msg-card { display: flex; gap: 6px; background: #fff; padding: 6px 10px; border-radius: 8px; width: fit-content; max-width: 88%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .msg-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; cursor: pointer; flex-shrink: 0; }
-        .msg-info { font-size: 10px; color: #64748b; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
-        .msg-author { font-weight: 700; color: #1e293b; cursor: pointer; }
-        .msg-time { font-size: 9px; color: #94a3b8; font-weight: 500; }
+        .msg-card { display: flex; gap: 8px; background: #fff; padding: 8px 10px; border-radius: 8px; width: fit-content; max-width: 88%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .msg-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; cursor: pointer; flex-shrink: 0; }
+        .msg-info { font-size: 11px; color: #64748b; margin-bottom: 2px; }
+        .msg-author { font-weight: 700; color: #1e293b; cursor: pointer; display: block; font-size: 12px; }
+        .msg-sub-info { font-size: 9px; color: #64748b; font-weight: 600; margin-bottom: 3px; }
+        .msg-time { font-size: 9px; color: #94a3b8; font-weight: 600; margin-top: 4px; display: block; text-align: right; }
         .msg-text { font-size: 12px; color: #334155; word-break: break-word; }
         .gender-icon-m { color: #2563eb; font-weight: 800; }
         .gender-icon-f { color: #ec4899; font-weight: 800; }
@@ -55,7 +56,6 @@
         .close-modal { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 16px; cursor: pointer; color: #64748b; }
         .profile-img-lg { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; margin-bottom: 8px; }
 
-        /* Floating Private Chat Window */
         .private-chat-window { position: absolute; bottom: 60px; right: 10px; width: 280px; height: 350px; background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; z-index: 50; }
         .private-header { background: #2563eb; color: #fff; padding: 8px; font-size: 12px; font-weight: 700; display: flex; justify-content: space-between; border-radius: 10px 10px 0 0; }
         .private-msgs { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
@@ -112,14 +112,15 @@
                     <span id="currentRoomTitle">🌐 India Chatroom</span>
                     <button class="btn-random" onclick="randomMatch()">🔀 Random Match</button>
                 </div>
-                <div class="active-users-bar" id="activeUsersBar"><span style="font-size: 10px; color: #64748b; font-weight: 700;">Online:</span></div>
+                <div class="active-users-bar" id="activeUsersBar">
+                    <span style="font-size: 10px; color: #64748b; font-weight: 700;">Active Users (0):</span>
+                </div>
                 <div class="chat-messages" id="chatMessages"></div>
                 <div class="chat-input-box">
                     <input type="text" id="msgInput" class="chat-input" placeholder="Type a message...">
                     <button class="btn-send" onclick="sendMessage()">Send</button>
                 </div>
 
-                <!-- Floating Private Chat Box -->
                 <div class="private-chat-window" id="privateChatWindow" style="display: none;">
                     <div class="private-header">
                         <span id="privateTargetName">Private Chat</span>
@@ -154,10 +155,10 @@
     let currentRoom = "India";
     let lastSentMessage = "";
     let selectedUserForReq = null;
-    let activePrivateChat = null; // { chatId, targetName }
+    let activePrivateChat = null;
     let onlineUsersList = [];
 
-    const countries = ["India", "USA", "UK", "Canada", "Brazil", "Japan", "Germany", "France", "Russia", "Australia"];
+    const countries = ["India", "USA", "UK", "Canada", "Brazil", "Japan", "Germany", "France", "Russia", "Australia", "Italy", "Spain", "Mexico", "China", "South Korea", "South Africa", "Nigeria", "Argentina", "Indonesia", "Saudi Arabia", "Turkey", "Egypt", "Pakistan", "Nepal", "Bangladesh"];
 
     function renderSidebar() {
         const countryListEl = document.getElementById('countryList');
@@ -179,7 +180,7 @@
         const dob = document.getElementById('dobInput').value;
         const picFile = document.getElementById('picInput').files[0];
 
-        if (!name || !dob) { alert("Name aur DOB bharna zaroori hai!"); return; }
+        if (!name || !dob) { alert("Please enter Name and Date of Birth!"); return; }
 
         currentUser.id = 'usr_' + Math.random().toString(36).substr(2, 9);
         currentUser.name = name;
@@ -233,7 +234,7 @@
     function listenCurrentRoomUsers() {
         const activeUsersBar = document.getElementById('activeUsersBar');
         db.ref(`presence/${currentRoom}`).on('value', (snapshot) => {
-            activeUsersBar.innerHTML = `<span style="font-size: 10px; color: #64748b; font-weight: 700;">Online (${snapshot.numChildren() || 0}):</span>`;
+            activeUsersBar.innerHTML = `<span style="font-size: 10px; color: #64748b; font-weight: 700;">Active Users (${snapshot.numChildren() || 0}):</span>`;
             onlineUsersList = [];
             snapshot.forEach((child) => {
                 const u = child.val();
@@ -263,6 +264,7 @@
     function listenToRoomMessages(room) {
         const chatBox = document.getElementById('chatMessages');
         chatBox.innerHTML = "";
+        
         db.ref('rooms/' + room).limitToLast(1000).off();
         db.ref('rooms/' + room).limitToLast(1000).on('child_added', (snapshot) => {
             appendMessage(snapshot.val());
@@ -274,7 +276,7 @@
         const text = input.value.trim();
 
         if (!text) return;
-        if (text === lastSentMessage) { alert("⚠️ Same message dobara nahi bhej sakte!"); return; }
+        if (text === lastSentMessage) { alert("⚠️ Cannot send duplicate messages!"); return; }
 
         db.ref('rooms/' + currentRoom).push({
             sender: currentUser.name,
@@ -288,36 +290,39 @@
         input.value = "";
     }
 
+    function formatTime(timestamp) {
+        if (!timestamp) return "";
+        const d = new Date(timestamp);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
     function appendMessage(data) {
         const chatBox = document.getElementById('chatMessages');
         const msgDiv = document.createElement('div');
         msgDiv.className = "msg-card";
-        const msgTime = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
-        const gIcon = data.gender === 'Female' ? '<span class="gender-icon-f">♀</span>' : '<span class="gender-icon-m">♂</span>';
+        const msgTime = formatTime(data.timestamp);
+        const gIcon = data.gender === 'Female' ? '<span class="gender-icon-f">Female ♀</span>' : '<span class="gender-icon-m">Male ♂</span>';
+        const dobText = data.dob ? ` | DOB: ${data.dob}` : '';
 
         msgDiv.innerHTML = `
             <img src="${data.pic}" class="msg-avatar" onclick="mentionUser('${data.sender}')">
-            <div>
-                <div class="msg-info">
-                    <span class="msg-author" onclick="mentionUser('${data.sender}')">${data.sender}</span>
-                    ${gIcon}
-                    <span class="msg-time">${msgTime}</span>
-                </div>
+            <div style="flex: 1;">
+                <span class="msg-author" onclick="mentionUser('${data.sender}')">${data.sender}</span>
+                <div class="msg-sub-info">${gIcon}${dobText}</div>
                 <div class="msg-text">${data.text}</div>
+                <span class="msg-time">${msgTime}</span>
             </div>
         `;
         chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Name click par input bar me @Name mention hona
     function mentionUser(name) {
         const input = document.getElementById('msgInput');
         input.value = `@${name} ` + input.value;
         input.focus();
     }
 
-    // Profile Display & Private Request Logic
     function showUserProfile(user) {
         selectedUserForReq = user;
         document.getElementById('viewUserName').innerText = user.name;
@@ -356,12 +361,14 @@
     }
 
     function randomMatch() {
-        if (onlineUsersList.length === 0) { alert("Koi online user nahi mila!"); return; }
+        if (onlineUsersList.length === 0) { 
+            alert("No online users found!"); 
+            return; 
+        }
         const randomUser = onlineUsersList[Math.floor(Math.random() * onlineUsersList.length)];
         showUserProfile(randomUser);
     }
 
-    // Private Chat Box Functionality
     function openPrivateChat(chatId, targetName) {
         activePrivateChat = { chatId, targetName };
         document.getElementById('privateTargetName').innerText = targetName;
