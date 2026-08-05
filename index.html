@@ -35,7 +35,6 @@
         .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .msg-card { display: flex; gap: 8px; background: #fff; padding: 8px 10px; border-radius: 8px; width: fit-content; max-width: 88%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .msg-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; cursor: pointer; flex-shrink: 0; }
-        .msg-info { font-size: 11px; color: #64748b; margin-bottom: 2px; }
         .msg-author { font-weight: 700; color: #1e293b; cursor: pointer; display: block; font-size: 12px; }
         .msg-sub-info { font-size: 9px; color: #64748b; font-weight: 600; margin-bottom: 3px; }
         .msg-time { font-size: 9px; color: #94a3b8; font-weight: 600; margin-top: 4px; display: block; text-align: right; }
@@ -153,10 +152,10 @@
 
     let currentUser = { id: "", name: "", gender: "Male", dob: "", pic: "" };
     let currentRoom = "India";
-    let lastSentMessage = "";
     let selectedUserForReq = null;
     let activePrivateChat = null;
     let onlineUsersList = [];
+    let messageListenerRef = null;
 
     const countries = ["India", "USA", "UK", "Canada", "Brazil", "Japan", "Germany", "France", "Russia", "Australia", "Italy", "Spain", "Mexico", "China", "South Korea", "South Africa", "Nigeria", "Argentina", "Indonesia", "Saudi Arabia", "Turkey", "Egypt", "Pakistan", "Nepal", "Bangladesh"];
 
@@ -261,13 +260,33 @@
         listenToRoomMessages(room);
     }
 
+    // FIXED: Strict 1000 Message Permanent Retrieval Logic
     function listenToRoomMessages(room) {
         const chatBox = document.getElementById('chatMessages');
         chatBox.innerHTML = "";
+
+        if (messageListenerRef) {
+            messageListenerRef.off();
+        }
+
+        messageListenerRef = db.ref('rooms/' + room).limitToLast(1000);
         
-        db.ref('rooms/' + room).limitToLast(1000).off();
-        db.ref('rooms/' + room).limitToLast(1000).on('child_added', (snapshot) => {
-            appendMessage(snapshot.val());
+        // Single Load for all historical messages (up to 1000)
+        messageListenerRef.once('value', (snapshot) => {
+            chatBox.innerHTML = "";
+            snapshot.forEach((childSnapshot) => {
+                appendMessage(childSnapshot.val());
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        // Realtime Listener for new incoming messages
+        messageListenerRef.on('child_added', (snapshot) => {
+            // Check if element is already rendered to avoid duplicate
+            const msgId = snapshot.key;
+            if(!document.getElementById(`msg-${msgId}`)) {
+                appendMessage(snapshot.val(), msgId);
+            }
         });
     }
 
@@ -276,17 +295,17 @@
         const text = input.value.trim();
 
         if (!text) return;
-        if (text === lastSentMessage) { alert("⚠️ Cannot send duplicate messages!"); return; }
 
-        db.ref('rooms/' + currentRoom).push({
+        const msgData = {
             sender: currentUser.name,
             gender: currentUser.gender,
             dob: currentUser.dob,
             pic: currentUser.pic,
             text: text,
             timestamp: Date.now()
-        });
-        lastSentMessage = text;
+        };
+
+        db.ref('rooms/' + currentRoom).push(msgData);
         input.value = "";
     }
 
@@ -296,10 +315,12 @@
         return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    function appendMessage(data) {
+    function appendMessage(data, key = "") {
         const chatBox = document.getElementById('chatMessages');
         const msgDiv = document.createElement('div');
         msgDiv.className = "msg-card";
+        if(key) msgDiv.id = `msg-${key}`;
+        
         const msgTime = formatTime(data.timestamp);
         const gIcon = data.gender === 'Female' ? '<span class="gender-icon-f">Female ♀</span>' : '<span class="gender-icon-m">Male ♂</span>';
         const dobText = data.dob ? ` | DOB: ${data.dob}` : '';
