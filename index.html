@@ -94,7 +94,7 @@
         <header>
             <div class="logo"><div class="logo-icon">⚡</div><span>WorldChat</span></div>
             <div class="user-profile-header">
-                <img id="userHeaderPic" src="https://via.placeholder.com/28" class="user-avatar" onclick="openMyProfile()">
+                <img id="userHeaderPic" src="https://via.placeholder.com/28" class="user-avatar">
                 <div id="userHeaderName" style="font-weight:700; font-size:11px;">Guest</div>
                 <button class="btn-logout" onclick="logout()">Logout</button>
             </div>
@@ -155,7 +155,7 @@
     let selectedUserForReq = null;
     let activePrivateChat = null;
     let onlineUsersList = [];
-    let messageListenerRef = null;
+    let currentMessageListener = null;
 
     const countries = ["India", "USA", "UK", "Canada", "Brazil", "Japan", "Germany", "France", "Russia", "Australia", "Italy", "Spain", "Mexico", "China", "South Korea", "South Africa", "Nigeria", "Argentina", "Indonesia", "Saudi Arabia", "Turkey", "Egypt", "Pakistan", "Nepal", "Bangladesh"];
 
@@ -260,29 +260,17 @@
         listenToRoomMessages(room);
     }
 
-    // FIXED: Strict 1000 Message Permanent Retrieval Logic
     function listenToRoomMessages(room) {
         const chatBox = document.getElementById('chatMessages');
         chatBox.innerHTML = "";
 
-        if (messageListenerRef) {
-            messageListenerRef.off();
+        if (currentMessageListener) {
+            currentMessageListener.off();
         }
 
-        messageListenerRef = db.ref('rooms/' + room).limitToLast(1000);
+        currentMessageListener = db.ref('messages/' + room).limitToLast(1000);
         
-        // Single Load for all historical messages (up to 1000)
-        messageListenerRef.once('value', (snapshot) => {
-            chatBox.innerHTML = "";
-            snapshot.forEach((childSnapshot) => {
-                appendMessage(childSnapshot.val());
-            });
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
-
-        // Realtime Listener for new incoming messages
-        messageListenerRef.on('child_added', (snapshot) => {
-            // Check if element is already rendered to avoid duplicate
+        currentMessageListener.on('child_added', (snapshot) => {
             const msgId = snapshot.key;
             if(!document.getElementById(`msg-${msgId}`)) {
                 appendMessage(snapshot.val(), msgId);
@@ -305,7 +293,12 @@
             timestamp: Date.now()
         };
 
-        db.ref('rooms/' + currentRoom).push(msgData);
+        // Saving under permanent 'messages' database ref
+        db.ref('messages/' + currentRoom).push(msgData, (error) => {
+            if (error) {
+                alert("Failed to send message! Please check Firebase rules.");
+            }
+        });
         input.value = "";
     }
 
