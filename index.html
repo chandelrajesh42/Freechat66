@@ -9,10 +9,8 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         html, body { height: 100%; width: 100%; overflow: hidden; background: #f8fafc; }
-        
         .app-main { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; }
 
-        /* HEADER */
         header { height: 50px; background: #ffffff; padding: 0 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
         .logo { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 800; color: #2563eb; }
         .logo-icon { width: 28px; height: 28px; background: #2563eb; color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
@@ -20,10 +18,7 @@
         .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; cursor: pointer; }
         .btn-logout { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px; }
 
-        /* BODY LAYOUT */
         .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
-        
-        /* SIDEBAR / ROOMS */
         .sidebar { width: 115px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-title { padding: 8px 4px; font-size: 10px; font-weight: 700; color: #64748b; border-bottom: 1px solid #f1f5f9; text-align: center; text-transform: uppercase; }
         .country-list { overflow-y: auto; flex: 1; }
@@ -32,31 +27,26 @@
         .room-badge { background: #e2e8f0; color: #475569; font-size: 9px; padding: 1px 5px; border-radius: 10px; font-weight: 700; }
         .country-btn.active .room-badge { background: #2563eb; color: #fff; }
 
-        /* CHAT AREA */
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; height: 100%; overflow: hidden; }
-        .chat-header { padding: 6px 12px; background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 12px; color: #1e293b; flex-shrink: 0; }
-        
-        /* ACTIVE USERS BAR IN ROOM */
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; height: 100%; overflow: hidden; position: relative; }
+        .chat-header { padding: 6px 12px; background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 12px; color: #1e293b; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
         .active-users-bar { background: #f8fafc; padding: 4px 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px; overflow-x: auto; flex-shrink: 0; min-height: 28px; }
         .active-user-tag { background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 2px 8px; font-size: 10px; display: flex; align-items: center; gap: 4px; white-space: nowrap; cursor: pointer; }
-        
-        /* MESSAGES LIST */
+
         .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .msg-card { display: flex; gap: 6px; background: #fff; padding: 6px 10px; border-radius: 8px; width: fit-content; max-width: 88%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .msg-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; cursor: pointer; flex-shrink: 0; }
-        .msg-info { font-size: 10px; color: #64748b; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+        .msg-info { font-size: 10px; color: #64748b; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
         .msg-author { font-weight: 700; color: #1e293b; cursor: pointer; }
+        .msg-time { font-size: 9px; color: #94a3b8; font-weight: 500; }
         .msg-text { font-size: 12px; color: #334155; word-break: break-word; }
-
         .gender-icon-m { color: #2563eb; font-weight: 800; }
         .gender-icon-f { color: #ec4899; font-weight: 800; }
 
-        /* FIXED BOTTOM INPUT BAR */
         .chat-input-box { padding: 8px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 6px; flex-shrink: 0; }
         .chat-input { flex: 1; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 13px; }
         .btn-send { background: #2563eb; color: white; border: none; padding: 0 14px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; }
+        .btn-random { background: #8b5cf6; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: 700; }
 
-        /* MODALS */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 15px; }
         .modal-box { background: #fff; padding: 18px; border-radius: 12px; width: 100%; max-width: 300px; text-align: center; position: relative; }
         .modal-box h3 { margin-bottom: 10px; color: #1e293b; font-size: 16px; }
@@ -64,12 +54,16 @@
         .file-label { display: block; text-align: left; font-size: 10px; margin-bottom: 2px; color: #64748b; font-weight: 600; }
         .close-modal { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 16px; cursor: pointer; color: #64748b; }
         .profile-img-lg { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; margin-bottom: 8px; }
+
+        /* Floating Private Chat Window */
+        .private-chat-window { position: absolute; bottom: 60px; right: 10px; width: 280px; height: 350px; background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; z-index: 50; }
+        .private-header { background: #2563eb; color: #fff; padding: 8px; font-size: 12px; font-weight: 700; display: flex; justify-content: space-between; border-radius: 10px 10px 0 0; }
+        .private-msgs { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        .private-input-box { display: flex; padding: 6px; border-top: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
-
     <div class="app-main">
-        <!-- LOGIN MODAL -->
         <div class="modal-overlay" id="loginModal">
             <div class="modal-box">
                 <h3>Welcome to WorldChat</h3>
@@ -87,7 +81,6 @@
             </div>
         </div>
 
-        <!-- PROFILE VIEW MODAL -->
         <div class="modal-overlay" id="profileModal" style="display: none;">
             <div class="modal-box">
                 <button class="close-modal" onclick="closeProfileModal()">✕</button>
@@ -95,15 +88,12 @@
                 <h3 id="viewUserName">User Name</h3>
                 <p id="viewUserGender" style="font-size: 12px; font-weight: 700; margin-top: 2px;"></p>
                 <p id="viewUserDob" style="font-size: 12px; color: #64748b; margin-top: 2px;">DOB: --/--/----</p>
+                <button id="reqBtn" class="btn-send" style="margin-top:10px; width:100%;" onclick="sendChatRequest()">Send Direct Message Request</button>
             </div>
         </div>
 
-        <!-- HEADER -->
         <header>
-            <div class="logo">
-                <div class="logo-icon">⚡</div>
-                <span>WorldChat</span>
-            </div>
+            <div class="logo"><div class="logo-icon">⚡</div><span>WorldChat</span></div>
             <div class="user-profile-header">
                 <img id="userHeaderPic" src="https://via.placeholder.com/28" class="user-avatar" onclick="openMyProfile()">
                 <div id="userHeaderName" style="font-weight:700; font-size:11px;">Guest</div>
@@ -111,7 +101,6 @@
             </div>
         </header>
 
-        <!-- BODY -->
         <div class="app-body">
             <div class="sidebar">
                 <div class="sidebar-title">Rooms</div>
@@ -119,18 +108,28 @@
             </div>
 
             <div class="chat-area">
-                <div class="chat-header" id="currentRoomTitle">🌐 India Chatroom</div>
-                
-                <!-- ONLINE USERS LIST IN CURRENT ROOM -->
-                <div class="active-users-bar" id="activeUsersBar">
-                    <span style="font-size: 10px; color: #64748b; font-weight: 700;">Online:</span>
+                <div class="chat-header">
+                    <span id="currentRoomTitle">🌐 India Chatroom</span>
+                    <button class="btn-random" onclick="randomMatch()">🔀 Random Match</button>
                 </div>
-
+                <div class="active-users-bar" id="activeUsersBar"><span style="font-size: 10px; color: #64748b; font-weight: 700;">Online:</span></div>
                 <div class="chat-messages" id="chatMessages"></div>
-                
                 <div class="chat-input-box">
                     <input type="text" id="msgInput" class="chat-input" placeholder="Type a message...">
                     <button class="btn-send" onclick="sendMessage()">Send</button>
+                </div>
+
+                <!-- Floating Private Chat Box -->
+                <div class="private-chat-window" id="privateChatWindow" style="display: none;">
+                    <div class="private-header">
+                        <span id="privateTargetName">Private Chat</span>
+                        <span style="cursor:pointer;" onclick="closePrivateChat()">✕</span>
+                    </div>
+                    <div class="private-msgs" id="privateMsgs"></div>
+                    <div class="private-input-box">
+                        <input type="text" id="pmInput" class="chat-input" placeholder="Private msg...">
+                        <button class="btn-send" onclick="sendPrivateMsg()">Send</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -154,11 +153,12 @@
     let currentUser = { id: "", name: "", gender: "Male", dob: "", pic: "" };
     let currentRoom = "India";
     let lastSentMessage = "";
-    let userPresenceRef = null;
+    let selectedUserForReq = null;
+    let activePrivateChat = null; // { chatId, targetName }
+    let onlineUsersList = [];
 
-    const countries = ["India", "USA", "UK", "Canada", "Brazil", "Japan", "Germany", "France", "Russia", "Australia", "Italy", "Spain", "Mexico", "China", "South Korea", "South Africa", "Nigeria", "Argentina", "Indonesia", "Saudi Arabia", "Turkey", "Egypt", "Pakistan", "Nepal", "Bangladesh"];
+    const countries = ["India", "USA", "UK", "Canada", "Brazil", "Japan", "Germany", "France", "Russia", "Australia"];
 
-    // Initialize Sidebar
     function renderSidebar() {
         const countryListEl = document.getElementById('countryList');
         countryListEl.innerHTML = "";
@@ -179,22 +179,16 @@
         const dob = document.getElementById('dobInput').value;
         const picFile = document.getElementById('picInput').files[0];
 
-        if (!name || !dob) {
-            alert("Name aur DOB bharna zaroori hai!");
-            return;
-        }
+        if (!name || !dob) { alert("Name aur DOB bharna zaroori hai!"); return; }
 
-        currentUser.id = 'user_' + Math.random().toString(36).substr(2, 9);
+        currentUser.id = 'usr_' + Math.random().toString(36).substr(2, 9);
         currentUser.name = name;
         currentUser.gender = gender;
         currentUser.dob = dob;
 
         if (picFile) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                currentUser.pic = e.target.result;
-                finishLogin();
-            }
+            reader.onload = function(e) { currentUser.pic = e.target.result; finishLogin(); }
             reader.readAsDataURL(picFile);
         } else {
             currentUser.pic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
@@ -209,35 +203,20 @@
         
         setupPresence();
         listenRoomCounts();
+        listenToRequests();
         switchRoom(currentRoom);
     }
 
     function logout() { location.reload(); }
 
-    // Presence & Room tracking
     function setupPresence() {
         db.ref('.info/connected').on('value', (snapshot) => {
             if (snapshot.val() === true) {
-                updateUserRoomPresence();
+                const userRef = db.ref(`presence/${currentRoom}/${currentUser.id}`);
+                userRef.set({ id: currentUser.id, name: currentUser.name, gender: currentUser.gender, dob: currentUser.dob, pic: currentUser.pic });
+                userRef.onDisconnect().remove();
             }
         });
-    }
-
-    function updateUserRoomPresence() {
-        if (!currentUser.id) return;
-        
-        if (userPresenceRef) {
-            userPresenceRef.remove();
-        }
-
-        userPresenceRef = db.ref(`presence/${currentRoom}/${currentUser.id}`);
-        userPresenceRef.set({
-            name: currentUser.name,
-            gender: currentUser.gender,
-            dob: currentUser.dob,
-            pic: currentUser.pic
-        });
-        userPresenceRef.onDisconnect().remove();
     }
 
     function listenRoomCounts() {
@@ -255,14 +234,15 @@
         const activeUsersBar = document.getElementById('activeUsersBar');
         db.ref(`presence/${currentRoom}`).on('value', (snapshot) => {
             activeUsersBar.innerHTML = `<span style="font-size: 10px; color: #64748b; font-weight: 700;">Online (${snapshot.numChildren() || 0}):</span>`;
+            onlineUsersList = [];
             snapshot.forEach((child) => {
                 const u = child.val();
+                if(u.id !== currentUser.id) onlineUsersList.push(u);
                 const gIcon = u.gender === 'Female' ? '<span class="gender-icon-f">♀</span>' : '<span class="gender-icon-m">♂</span>';
-                
                 const tag = document.createElement('div');
                 tag.className = 'active-user-tag';
                 tag.innerHTML = `${gIcon} ${u.name}`;
-                tag.onclick = () => showUserProfile(u.name, u.gender, u.dob, u.pic);
+                tag.onclick = () => showUserProfile(u);
                 activeUsersBar.appendChild(tag);
             });
         });
@@ -275,8 +255,7 @@
         if(activeBtn) activeBtn.classList.add('active');
         
         document.getElementById('currentRoomTitle').innerText = `🌐 ${room} Chatroom`;
-        
-        updateUserRoomPresence();
+        setupPresence();
         listenCurrentRoomUsers();
         listenToRoomMessages(room);
     }
@@ -284,8 +263,8 @@
     function listenToRoomMessages(room) {
         const chatBox = document.getElementById('chatMessages');
         chatBox.innerHTML = "";
-        db.ref('rooms/' + room).limitToLast(30).off();
-        db.ref('rooms/' + room).limitToLast(30).on('child_added', (snapshot) => {
+        db.ref('rooms/' + room).limitToLast(1000).off();
+        db.ref('rooms/' + room).limitToLast(1000).on('child_added', (snapshot) => {
             appendMessage(snapshot.val());
         });
     }
@@ -295,21 +274,16 @@
         const text = input.value.trim();
 
         if (!text) return;
-        if (text === lastSentMessage) {
-            alert("⚠️ Same message dobara nahi bhej sakte!");
-            return;
-        }
+        if (text === lastSentMessage) { alert("⚠️ Same message dobara nahi bhej sakte!"); return; }
 
-        const msgData = {
+        db.ref('rooms/' + currentRoom).push({
             sender: currentUser.name,
             gender: currentUser.gender,
             dob: currentUser.dob,
             pic: currentUser.pic,
             text: text,
             timestamp: Date.now()
-        };
-
-        db.ref('rooms/' + currentRoom).push(msgData);
+        });
         lastSentMessage = text;
         input.value = "";
     }
@@ -318,20 +292,16 @@
         const chatBox = document.getElementById('chatMessages');
         const msgDiv = document.createElement('div');
         msgDiv.className = "msg-card";
-        
-        const safeName = (data.sender || 'User').replace(/'/g, "\\'");
-        const safeGender = data.gender || 'Male';
-        const safePic = data.pic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-        const safeDob = data.dob || "";
-
-        const gIcon = safeGender === 'Female' ? '<span class="gender-icon-f">♀</span>' : '<span class="gender-icon-m">♂</span>';
+        const msgTime = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+        const gIcon = data.gender === 'Female' ? '<span class="gender-icon-f">♀</span>' : '<span class="gender-icon-m">♂</span>';
 
         msgDiv.innerHTML = `
-            <img src="${safePic}" class="msg-avatar" onclick="showUserProfile('${safeName}', '${safeGender}', '${safeDob}', '${safePic}')">
+            <img src="${data.pic}" class="msg-avatar" onclick="mentionUser('${data.sender}')">
             <div>
                 <div class="msg-info">
-                    <span class="msg-author" onclick="showUserProfile('${safeName}', '${safeGender}', '${safeDob}', '${safePic}')">${data.sender}</span>
+                    <span class="msg-author" onclick="mentionUser('${data.sender}')">${data.sender}</span>
                     ${gIcon}
+                    <span class="msg-time">${msgTime}</span>
                 </div>
                 <div class="msg-text">${data.text}</div>
             </div>
@@ -340,28 +310,94 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function showUserProfile(name, gender, dob, pic) {
-        document.getElementById('viewUserName').innerText = name;
-        const gLabel = gender === 'Female' ? '<span class="gender-icon-f">Female ♀</span>' : '<span class="gender-icon-m">Male ♂</span>';
-        document.getElementById('viewUserGender').innerHTML = gLabel;
-        document.getElementById('viewUserDob').innerText = `DOB: ${dob || 'Not Provided'}`;
-        document.getElementById('viewUserPic').src = pic;
+    // Name click par input bar me @Name mention hona
+    function mentionUser(name) {
+        const input = document.getElementById('msgInput');
+        input.value = `@${name} ` + input.value;
+        input.focus();
+    }
+
+    // Profile Display & Private Request Logic
+    function showUserProfile(user) {
+        selectedUserForReq = user;
+        document.getElementById('viewUserName').innerText = user.name;
+        document.getElementById('viewUserGender').innerHTML = user.gender === 'Female' ? '<span class="gender-icon-f">Female ♀</span>' : '<span class="gender-icon-m">Male ♂</span>';
+        document.getElementById('viewUserDob').innerText = `DOB: ${user.dob || 'Not Provided'}`;
+        document.getElementById('viewUserPic').src = user.pic;
+        
+        const reqBtn = document.getElementById('reqBtn');
+        reqBtn.style.display = (user.id === currentUser.id) ? "none" : "block";
         document.getElementById('profileModal').style.display = 'flex';
     }
 
-    function openMyProfile() {
-        if(currentUser.name) {
-            showUserProfile(currentUser.name, currentUser.gender, currentUser.dob, currentUser.pic);
-        }
+    function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
+
+    function sendChatRequest() {
+        if (!selectedUserForReq) return;
+        db.ref(`requests/${selectedUserForReq.id}/${currentUser.id}`).set({
+            fromId: currentUser.id,
+            fromName: currentUser.name
+        });
+        alert(`Private chat request sent to ${selectedUserForReq.name}`);
+        closeProfileModal();
     }
 
-    function closeProfileModal() {
-        document.getElementById('profileModal').style.display = 'none';
+    function listenToRequests() {
+        db.ref(`requests/${currentUser.id}`).on('child_added', (snapshot) => {
+            const req = snapshot.val();
+            if (confirm(`${req.fromName} wants to chat privately with you. Accept?`)) {
+                const chatId = [currentUser.id, req.fromId].sort().join("_");
+                db.ref(`requests/${currentUser.id}/${req.fromId}`).remove();
+                openPrivateChat(chatId, req.fromName);
+            } else {
+                db.ref(`requests/${currentUser.id}/${req.fromId}`).remove();
+            }
+        });
     }
 
-    document.getElementById('msgInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') sendMessage();
-    });
+    function randomMatch() {
+        if (onlineUsersList.length === 0) { alert("Koi online user nahi mila!"); return; }
+        const randomUser = onlineUsersList[Math.floor(Math.random() * onlineUsersList.length)];
+        showUserProfile(randomUser);
+    }
+
+    // Private Chat Box Functionality
+    function openPrivateChat(chatId, targetName) {
+        activePrivateChat = { chatId, targetName };
+        document.getElementById('privateTargetName').innerText = targetName;
+        document.getElementById('privateChatWindow').style.display = 'flex';
+        
+        const pmBox = document.getElementById('privateMsgs');
+        pmBox.innerHTML = "";
+        
+        db.ref(`private_chats/${chatId}`).off();
+        db.ref(`private_chats/${chatId}`).on('child_added', (snapshot) => {
+            const msg = snapshot.val();
+            const msgDiv = document.createElement('div');
+            msgDiv.style.fontSize = "11px";
+            msgDiv.innerHTML = `<b>${msg.sender}:</b> ${msg.text}`;
+            pmBox.appendChild(msgDiv);
+            pmBox.scrollTop = pmBox.scrollHeight;
+        });
+    }
+
+    function sendPrivateMsg() {
+        const pmInput = document.getElementById('pmInput');
+        const text = pmInput.value.trim();
+        if(!text || !activePrivateChat) return;
+
+        db.ref(`private_chats/${activePrivateChat.chatId}`).push({
+            sender: currentUser.name,
+            text: text
+        });
+        pmInput.value = "";
+    }
+
+    function closePrivateChat() {
+        document.getElementById('privateChatWindow').style.display = 'none';
+    }
+
+    document.getElementById('msgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 </script>
 </body>
 </html>
