@@ -2,329 +2,423 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorldChat</title>
-    <!-- Firebase SDKs -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WorldChat - Global Rooms</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <!-- FontAwesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
-        
-        /* Top Header */
-        .top-header { background: #fff; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 10; }
-        .header-title { font-size: 18px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 8px; }
-        .header-actions { display: flex; gap: 15px; color: #555; font-size: 18px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        html, body { height: 100%; width: 100%; overflow: hidden; background: #f8fafc; }
+        .app-main { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; }
 
-        /* Screens/Views */
-        .screen { flex: 1; display: none; flex-direction: column; overflow: hidden; padding-bottom: 60px; }
-        .screen.active { display: flex; }
+        header { height: 50px; background: #ffffff; padding: 0 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+        .logo { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 800; color: #2563eb; }
+        .logo-icon { width: 28px; height: 28px; background: #2563eb; color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .user-profile-header { display: flex; align-items: center; gap: 6px; }
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; cursor: pointer; }
+        .btn-logout { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px; }
 
-        /* Setup Screen */
-        #setup-screen { justify-content: center; align-items: center; padding: 20px; background: #fff; }
-        .setup-card { width: 100%; max-width: 400px; padding: 30px; background: #f9f9f9; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
-        .setup-card h2 { margin-bottom: 20px; color: #333; }
-        .setup-card input, .setup-card select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
-        .setup-card button { width: 100%; padding: 12px; background: #00bcd4; color: #white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
+        .sidebar { width: 115px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-title { padding: 8px 4px; font-size: 10px; font-weight: 700; color: #64748b; border-bottom: 1px solid #f1f5f9; text-align: center; text-transform: uppercase; }
+        .country-list { overflow-y: auto; flex: 1; }
+        .country-btn { width: 100%; padding: 8px 6px; border: none; background: transparent; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 600; font-size: 11px; color: #475569; border-bottom: 1px solid #f8fafc; }
+        .country-btn.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
+        .room-badge { background: #e2e8f0; color: #475569; font-size: 9px; padding: 1px 5px; border-radius: 10px; font-weight: 700; }
+        .country-btn.active .room-badge { background: #2563eb; color: #fff; }
 
-        /* Chat Rooms List */
-        .rooms-container { padding: 15px; overflow-y: auto; flex: 1; }
-        .room-item { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
-        .room-info h4 { font-size: 16px; color: #333; margin-bottom: 3px; }
-        .room-info p { font-size: 12px; color: #888; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; height: 100%; overflow: hidden; position: relative; }
+        .chat-header { padding: 6px 12px; background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 12px; color: #1e293b; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+        .active-users-bar { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px; overflow-x: auto; flex-shrink: 0; min-height: 32px; }
+        .active-user-tag { background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 2px 8px; font-size: 10px; display: flex; align-items: center; gap: 4px; white-space: nowrap; cursor: pointer; font-weight: 600; }
 
-        /* Chat Box Interface */
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f7f9fa; }
-        .message-row { display: flex; gap: 10px; align-items: flex-end; }
-        .message-row.self { flex-direction: row-reverse; }
-        .avatar { width: 35px; height: 35px; border-radius: 50%; background: #00bcd4; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; }
-        .bubble { max-width: 70%; padding: 10px 14px; border-radius: 15px; font-size: 14px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; }
-        .message-row.self .bubble { background: #dcf8c6; }
-        .sender-name { font-size: 11px; color: #888; margin-bottom: 2px; }
+        .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .msg-card { display: flex; gap: 8px; background: #fff; padding: 8px 10px; border-radius: 8px; width: fit-content; max-width: 88%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .msg-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; cursor: pointer; flex-shrink: 0; }
+        .msg-author { font-weight: 700; color: #1e293b; cursor: pointer; display: block; font-size: 12px; }
+        .msg-sub-info { font-size: 9px; color: #64748b; font-weight: 600; margin-bottom: 3px; }
+        .msg-time { font-size: 9px; color: #94a3b8; font-weight: 600; margin-top: 4px; display: block; text-align: right; }
+        .msg-text { font-size: 12px; color: #334155; word-break: break-word; }
+        .gender-icon-m { color: #2563eb; font-weight: 800; }
+        .gender-icon-f { color: #ec4899; font-weight: 800; }
 
-        /* Input Footer */
-        .chat-input-bar { padding: 10px; background: #fff; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd; position: fixed; bottom: 55px; left: 0; right: 0; }
-        .chat-input-bar input { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #ddd; outline: none; background: #f5f5f5; }
-        .chat-input-bar button { background: #00bcd4; color: #white; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
+        .chat-input-box { padding: 8px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 6px; flex-shrink: 0; }
+        .chat-input { flex: 1; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 13px; }
+        .btn-send { background: #2563eb; color: white; border: none; padding: 0 14px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; }
+        .btn-random { background: #8b5cf6; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: 700; }
 
-        /* Bottom Nav Bar */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 55px; background: #fff; display: flex; border-top: 1px solid #ddd; z-index: 100; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #777; gap: 3px; cursor: pointer; }
-        .nav-item.active { color: #00bcd4; font-weight: bold; }
-        .nav-item i { font-size: 18px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 15px; }
+        .modal-box { background: #fff; padding: 18px; border-radius: 12px; width: 100%; max-width: 300px; text-align: center; position: relative; }
+        .modal-box h3 { margin-bottom: 10px; color: #1e293b; font-size: 16px; }
+        .modal-box input, .modal-box select { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; background: #fff; }
+        .file-label { display: block; text-align: left; font-size: 10px; margin-bottom: 2px; color: #64748b; font-weight: 600; }
+        .close-modal { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 16px; cursor: pointer; color: #64748b; }
+        .profile-img-lg { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #2563eb; margin-bottom: 8px; }
 
-        /* Modals */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; }
-        .modal-content { background: #fff; width: 100%; padding: 20px; border-radius: 15px 15px 0 0; }
-        .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
-        .btn-primary { background: #00bcd4; color: #white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; float: right; }
+        .private-chat-window { position: absolute; bottom: 60px; right: 10px; width: 280px; height: 350px; background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; z-index: 50; }
+        .private-header { background: #2563eb; color: #fff; padding: 8px; font-size: 12px; font-weight: 700; display: flex; justify-content: space-between; border-radius: 10px 10px 0 0; }
+        .private-msgs { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        .private-input-box { display: flex; padding: 6px; border-top: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
-
-    <!-- Top Header Bar -->
-    <div class="top-header">
-        <div class="header-title" id="headerTitle">
-            <i class="fa-solid fa-angle-left" id="backBtn" style="display:none; cursor:pointer;" onclick="goToRooms()"></i> 
-            <span id="appTitle">WorldChat</span>
-            <span style="font-size: 11px; color: #4caf50;" id="onlineStatus">Online</span>
+    <div class="app-main">
+        <div class="modal-overlay" id="loginModal">
+            <div class="modal-box">
+                <h3>Welcome to WorldChat</h3>
+                <span class="file-label">Profile Photo:</span>
+                <input type="file" id="picInput" accept="image/*">
+                <input type="text" id="nameInput" placeholder="Enter Your Name">
+                <span class="file-label">Gender:</span>
+                <select id="genderInput">
+                    <option value="Male">Male ♂</option>
+                    <option value="Female">Female ♀</option>
+                </select>
+                <span class="file-label">Date of Birth:</span>
+                <input type="date" id="dobInput">
+                <button class="btn-send" style="width:100%; padding:8px; margin-top:4px;" onclick="saveUser()">Join Chat</button>
+            </div>
         </div>
-        <div class="header-actions">
-            <i class="fa-solid fa-phone"></i>
-            <i class="fa-solid fa-video"></i>
-            <i class="fa-solid fa-gear" onclick="toggleModal('prefModal')"></i>
-        </div>
-    </div>
 
-    <!-- 1. Setup Screen (Login) -->
-    <div id="setup-screen" class="screen active">
-        <div class="setup-card">
-            <h2>Welcome to WorldChat</h2>
-            <input type="text" id="usernameInput" placeholder="Enter your name...">
-            <select id="roomSelect">
-                <option value="India">🇮🇳 India Chatroom</option>
-                <option value="Global">🌍 Global Chatroom</option>
-                <option value="Gamers">🎮 Gamers Lounge</option>
-            </select>
-            <button onclick="startChat()">Start Chatting</button>
+        <div class="modal-overlay" id="profileModal" style="display: none;">
+            <div class="modal-box">
+                <button class="close-modal" onclick="closeProfileModal()">✕</button>
+                <img id="viewUserPic" src="" class="profile-img-lg">
+                <h3 id="viewUserName">User Name</h3>
+                <p id="viewUserGender" style="font-size: 12px; font-weight: 700; margin-top: 2px;"></p>
+                <p id="viewUserDob" style="font-size: 12px; color: #64748b; margin-top: 2px;">DOB: --/--/----</p>
+                <button id="reqBtn" class="btn-send" style="margin-top:10px; width:100%;" onclick="sendChatRequest()">Send Direct Message Request</button>
+            </div>
         </div>
-    </div>
 
-    <!-- 2. Rooms / Main Lobby Screen -->
-    <div id="rooms-screen" class="screen">
-        <div class="rooms-container" id="roomsList">
-            <div class="room-item" onclick="joinRoom('India')">
-                <div class="room-info">
-                    <h4>🇮🇳 India Chatroom</h4>
-                    <p>Public room for everyone</p>
+        <header>
+            <div class="logo"><div class="logo-icon">⚡</div><span>WorldChat</span></div>
+            <div class="user-profile-header">
+                <img id="userHeaderPic" src="https://via.placeholder.com/28" class="user-avatar">
+                <div id="userHeaderName" style="font-weight:700; font-size:11px;">Guest</div>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <div class="app-body">
+            <div class="sidebar">
+                <div class="sidebar-title">Rooms</div>
+                <div class="country-list" id="countryList"></div>
+            </div>
+
+            <div class="chat-area">
+                <div class="chat-header">
+                    <span id="currentRoomTitle">🌐 India Chatroom</span>
+                    <button class="btn-random" onclick="randomMatch()">🔀 Random Match</button>
                 </div>
-                <i class="fa-solid fa-chevron-right" style="color: #bbb;"></i>
-            </div>
-            <div class="room-item" onclick="joinRoom('Global')">
-                <div class="room-info">
-                    <h4>🌍 Global Chatroom</h4>
-                    <p>Connect with people worldwide</p>
+                <div class="active-users-bar" id="activeUsersBar">
+                    <span style="font-size: 10px; color: #64748b; font-weight: 700;">Active Users (0):</span>
                 </div>
-                <i class="fa-solid fa-chevron-right" style="color: #bbb;"></i>
-            </div>
-            <div class="room-item" onclick="joinRoom('Gamers')">
-                <div class="room-info">
-                    <h4>🎮 Gamers Lounge</h4>
-                    <p>Talk about gaming and setup</p>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-box">
+                    <input type="text" id="msgInput" class="chat-input" placeholder="Type a message...">
+                    <button class="btn-send" onclick="sendMessage()">Send</button>
                 </div>
-                <i class="fa-solid fa-chevron-right" style="color: #bbb;"></i>
+
+                <div class="private-chat-window" id="privateChatWindow" style="display: none;">
+                    <div class="private-header">
+                        <span id="privateTargetName">Private Chat</span>
+                        <span style="cursor:pointer;" onclick="closePrivateChat()">✕</span>
+                    </div>
+                    <div class="private-msgs" id="privateMsgs"></div>
+                    <div class="private-input-box">
+                        <input type="text" id="pmInput" class="chat-input" placeholder="Private msg...">
+                        <button class="btn-send" onclick="sendPrivateMsg()">Send</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 3. Active Chat Screen -->
-    <div id="chat-screen" class="screen">
-        <div class="chat-messages" id="chatBox"></div>
-        <div class="chat-input-bar">
-            <i class="fa-regular fa-face-smile" style="font-size: 20px; color: #777;"></i>
-            <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="checkEnter(event)">
-            <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-    </div>
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAz2WOC9A7nGq2dVRNIT0BKo9sPcc1z08k",
+      authDomain: "free-chat66.firebaseapp.com",
+      projectId: "free-chat66",
+      storageBucket: "free-chat66.firebasestorage.app",
+      messagingSenderId: "967226596729",
+      appId: "1:967226596729:web:41a3903345b1a7122fe3a8",
+      measurementId: "G-JJ2YWDR0VH",
+      databaseURL: "https://free-chat66-default-rtdb.firebaseio.com/"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    <!-- 4. People Screen -->
-    <div id="people-screen" class="screen" style="padding: 15px;">
-        <h3 style="margin-bottom: 15px;">People</h3>
-        <input type="text" placeholder="Search people..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
-        <p style="color: #888; text-align: center; margin-top: 30px;">Your friend list is empty</p>
-    </div>
+    let currentUser = { id: "", name: "", gender: "Male", dob: "", pic: "" };
+    let currentRoom = "India";
+    let selectedUserForReq = null;
+    let activePrivateChat = null;
+    let onlineUsersList = [];
+    let currentMessageListener = null;
 
-    <!-- 5. Mini Apps Screen -->
-    <div id="apps-screen" class="screen" style="padding: 15px; overflow-y: auto;">
-        <h3 style="margin-bottom: 15px;">WorldChat Mini Apps</h3>
-        <div style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <h4>🌐 Web App Link</h4>
-            <p style="font-size: 12px; color: #666; margin: 5px 0 10px 0;">Add WorldChat directly to your home screen.</p>
-            <button style="background:none; border:1px solid #00bcd4; color:#00bcd4; padding:5px 15px; border-radius:15px; font-weight:bold;">WEB APP</button>
-        </div>
-    </div>
+    const countries = ["India", "USA", "UK", "Canada", "Brazil", "Japan", "Germany", "France", "Russia", "Australia", "Italy", "Spain", "Mexico", "China", "South Korea", "South Africa", "Nigeria", "Argentina", "Indonesia", "Saudi Arabia", "Turkey", "Egypt", "Pakistan", "Nepal", "Bangladesh"];
 
-    <!-- Bottom Navigation Bar -->
-    <div class="bottom-nav">
-        <div class="nav-item" onclick="switchTab('rooms')"><i class="fa-solid fa-house"></i>ROOMS</div>
-        <div class="nav-item active" id="navChat" onclick="switchTab('chat')"><i class="fa-solid fa-comment-dots"></i>MESSAGES</div>
-        <div class="nav-item" onclick="switchTab('people')"><i class="fa-solid fa-user-group"></i>PEOPLE</div>
-        <div class="nav-item" onclick="switchTab('apps')"><i class="fa-solid fa-border-all"></i>APPS</div>
-    </div>
+    function renderSidebar() {
+        const countryListEl = document.getElementById('countryList');
+        countryListEl.innerHTML = "";
+        countries.forEach((country) => {
+            const btn = document.createElement('button');
+            btn.className = `country-btn ${country === currentRoom ? 'active' : ''}`;
+            btn.id = `room-btn-${country.replace(/\s+/g, '')}`;
+            btn.innerHTML = `<span>🌐 ${country}</span> <span class="room-badge" id="badge-${country.replace(/\s+/g, '')}">0</span>`;
+            btn.onclick = () => switchRoom(country, btn);
+            countryListEl.appendChild(btn);
+        });
+    }
+    renderSidebar();
 
-    <!-- Quick Preferences Modal -->
-    <div class="modal" id="prefModal">
-        <div class="modal-content">
-            <div class="modal-title">Quick Preferences</div>
-            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Tweak your WorldChat settings</p>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <span>Notification Sounds</span>
-                <input type="checkbox" checked>
-            </div>
-            <button class="btn-primary" onclick="toggleModal('prefModal')">SAVE</button>
-        </div>
-    </div>
+    function saveUser() {
+        const name = document.getElementById('nameInput').value.trim();
+        const gender = document.getElementById('genderInput').value;
+        const dob = document.getElementById('dobInput').value;
+        const picFile = document.getElementById('picInput').files[0];
 
-    <script>
-        // Firebase Config Setup (Aapka apna config yahan rahega)
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "YOUR_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+        if (!name || !dob) { alert("Please enter Name and Date of Birth!"); return; }
+
+        currentUser.id = 'usr_' + Math.random().toString(36).substr(2, 9);
+        currentUser.name = name;
+        currentUser.gender = gender;
+        currentUser.dob = dob;
+
+        if (picFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) { currentUser.pic = e.target.result; finishLogin(); }
+            reader.readAsDataURL(picFile);
+        } else {
+            currentUser.pic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            finishLogin();
+        }
+    }
+
+    function finishLogin() {
+        document.getElementById('loginModal').style.display = "none";
+        document.getElementById('userHeaderName').innerText = currentUser.name;
+        document.getElementById('userHeaderPic').src = currentUser.pic;
+        
+        setupPresence();
+        listenRoomCounts();
+        listenToRequests();
+        switchRoom(currentRoom);
+    }
+
+    function logout() { location.reload(); }
+
+    function setupPresence() {
+        db.ref('.info/connected').on('value', (snapshot) => {
+            if (snapshot.val() === true) {
+                const userRef = db.ref(`presence/${currentRoom}/${currentUser.id}`);
+                userRef.set({ id: currentUser.id, name: currentUser.name, gender: currentUser.gender, dob: currentUser.dob, pic: currentUser.pic });
+                userRef.onDisconnect().remove();
+            }
+        });
+    }
+
+    function listenRoomCounts() {
+        countries.forEach((country) => {
+            const safeRoomId = country.replace(/\s+/g, '');
+            db.ref(`presence/${country}`).on('value', (snapshot) => {
+                const count = snapshot.numChildren() || 0;
+                const badge = document.getElementById(`badge-${safeRoomId}`);
+                if (badge) badge.innerText = count;
+            });
+        });
+    }
+
+    function listenCurrentRoomUsers() {
+        const activeUsersBar = document.getElementById('activeUsersBar');
+        db.ref(`presence/${currentRoom}`).on('value', (snapshot) => {
+            activeUsersBar.innerHTML = `<span style="font-size: 10px; color: #64748b; font-weight: 700;">Active Users (${snapshot.numChildren() || 0}):</span>`;
+            onlineUsersList = [];
+            snapshot.forEach((child) => {
+                const u = child.val();
+                if(u.id !== currentUser.id) onlineUsersList.push(u);
+                const gIcon = u.gender === 'Female' ? '<span class="gender-icon-f">♀</span>' : '<span class="gender-icon-m">♂</span>';
+                const tag = document.createElement('div');
+                tag.className = 'active-user-tag';
+                tag.innerHTML = `${gIcon} ${u.name}`;
+                tag.onclick = () => showUserProfile(u);
+                activeUsersBar.appendChild(tag);
+            });
+        });
+    }
+
+    function switchRoom(room, btn) {
+        currentRoom = room;
+        document.querySelectorAll('.country-btn').forEach(b => b.classList.remove('active'));
+        const activeBtn = btn || document.getElementById(`room-btn-${room.replace(/\s+/g, '')}`);
+        if(activeBtn) activeBtn.classList.add('active');
+        
+        document.getElementById('currentRoomTitle').innerText = `🌐 ${room} Chatroom`;
+        setupPresence();
+        listenCurrentRoomUsers();
+        listenToRoomMessages(room);
+    }
+
+    function listenToRoomMessages(room) {
+        const chatBox = document.getElementById('chatMessages');
+        chatBox.innerHTML = "";
+
+        if (currentMessageListener) {
+            currentMessageListener.off();
+        }
+
+        currentMessageListener = db.ref('messages/' + room).limitToLast(1000);
+        
+        currentMessageListener.on('child_added', (snapshot) => {
+            const msgId = snapshot.key;
+            if(!document.getElementById(`msg-${msgId}`)) {
+                appendMessage(snapshot.val(), msgId);
+            }
+        });
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('msgInput');
+        const text = input.value.trim();
+
+        if (!text) return;
+
+        const msgData = {
+            sender: currentUser.name,
+            gender: currentUser.gender,
+            dob: currentUser.dob,
+            pic: currentUser.pic,
+            text: text,
+            timestamp: Date.now()
         };
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.database();
-
-        let currentUser = localStorage.getItem("chat_user") || "";
-        let currentRoom = localStorage.getItem("chat_room") || "India";
-        let messageListener = null;
-
-        // Auto-login check
-        window.onload = function() {
-            if (currentUser) {
-                document.getElementById("setup-screen").classList.remove("active");
-                document.getElementById("chat-screen").classList.add("active");
-                document.getElementById("appTitle").innerText = `${currentRoom} - ${currentUser}`;
-                document.getElementById("backBtn").style.display = "inline-block";
-                loadMessages();
+        // Saving under permanent 'messages' database ref
+        db.ref('messages/' + currentRoom).push(msgData, (error) => {
+            if (error) {
+                alert("Failed to send message! Please check Firebase rules.");
             }
-        };
+        });
+        input.value = "";
+    }
 
-        function startChat() {
-            const nameInput = document.getElementById("usernameInput").value.trim();
-            const roomDropdown = document.getElementById("roomSelect").value;
-            
-            if (!nameInput) {
-                alert("Please enter your name!");
-                return;
+    function formatTime(timestamp) {
+        if (!timestamp) return "";
+        const d = new Date(timestamp);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function appendMessage(data, key = "") {
+        const chatBox = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = "msg-card";
+        if(key) msgDiv.id = `msg-${key}`;
+        
+        const msgTime = formatTime(data.timestamp);
+        const gIcon = data.gender === 'Female' ? '<span class="gender-icon-f">Female ♀</span>' : '<span class="gender-icon-m">Male ♂</span>';
+        const dobText = data.dob ? ` | DOB: ${data.dob}` : '';
+
+        msgDiv.innerHTML = `
+            <img src="${data.pic}" class="msg-avatar" onclick="mentionUser('${data.sender}')">
+            <div style="flex: 1;">
+                <span class="msg-author" onclick="mentionUser('${data.sender}')">${data.sender}</span>
+                <div class="msg-sub-info">${gIcon}${dobText}</div>
+                <div class="msg-text">${data.text}</div>
+                <span class="msg-time">${msgTime}</span>
+            </div>
+        `;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function mentionUser(name) {
+        const input = document.getElementById('msgInput');
+        input.value = `@${name} ` + input.value;
+        input.focus();
+    }
+
+    function showUserProfile(user) {
+        selectedUserForReq = user;
+        document.getElementById('viewUserName').innerText = user.name;
+        document.getElementById('viewUserGender').innerHTML = user.gender === 'Female' ? '<span class="gender-icon-f">Female ♀</span>' : '<span class="gender-icon-m">Male ♂</span>';
+        document.getElementById('viewUserDob').innerText = `DOB: ${user.dob || 'Not Provided'}`;
+        document.getElementById('viewUserPic').src = user.pic;
+        
+        const reqBtn = document.getElementById('reqBtn');
+        reqBtn.style.display = (user.id === currentUser.id) ? "none" : "block";
+        document.getElementById('profileModal').style.display = 'flex';
+    }
+
+    function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
+
+    function sendChatRequest() {
+        if (!selectedUserForReq) return;
+        db.ref(`requests/${selectedUserForReq.id}/${currentUser.id}`).set({
+            fromId: currentUser.id,
+            fromName: currentUser.name
+        });
+        alert(`Private chat request sent to ${selectedUserForReq.name}`);
+        closeProfileModal();
+    }
+
+    function listenToRequests() {
+        db.ref(`requests/${currentUser.id}`).on('child_added', (snapshot) => {
+            const req = snapshot.val();
+            if (confirm(`${req.fromName} wants to chat privately with you. Accept?`)) {
+                const chatId = [currentUser.id, req.fromId].sort().join("_");
+                db.ref(`requests/${currentUser.id}/${req.fromId}`).remove();
+                openPrivateChat(chatId, req.fromName);
+            } else {
+                db.ref(`requests/${currentUser.id}/${req.fromId}`).remove();
             }
+        });
+    }
 
-            currentUser = nameInput;
-            currentRoom = roomDropdown;
-            
-            localStorage.setItem("chat_user", currentUser);
-            localStorage.setItem("chat_room", currentRoom);
-
-            document.getElementById("setup-screen").classList.remove("active");
-            document.getElementById("chat-screen").classList.add("active");
-            document.getElementById("appTitle").innerText = `${currentRoom} - ${currentUser}`;
-            document.getElementById("backBtn").style.display = "inline-block";
-
-            loadMessages();
+    function randomMatch() {
+        if (onlineUsersList.length === 0) { 
+            alert("No online users found!"); 
+            return; 
         }
+        const randomUser = onlineUsersList[Math.floor(Math.random() * onlineUsersList.length)];
+        showUserProfile(randomUser);
+    }
 
-        function joinRoom(roomName) {
-            currentRoom = roomName;
-            localStorage.setItem("chat_room", currentRoom);
-            document.getElementById("rooms-screen").classList.remove("active");
-            document.getElementById("chat-screen").classList.add("active");
-            document.getElementById("appTitle").innerText = `${currentRoom} - ${currentUser}`;
-            document.getElementById("backBtn").style.display = "inline-block";
-            loadMessages();
-        }
+    function openPrivateChat(chatId, targetName) {
+        activePrivateChat = { chatId, targetName };
+        document.getElementById('privateTargetName').innerText = targetName;
+        document.getElementById('privateChatWindow').style.display = 'flex';
+        
+        const pmBox = document.getElementById('privateMsgs');
+        pmBox.innerHTML = "";
+        
+        db.ref(`private_chats/${chatId}`).off();
+        db.ref(`private_chats/${chatId}`).on('child_added', (snapshot) => {
+            const msg = snapshot.val();
+            const msgDiv = document.createElement('div');
+            msgDiv.style.fontSize = "11px";
+            msgDiv.innerHTML = `<b>${msg.sender}:</b> ${msg.text}`;
+            pmBox.appendChild(msgDiv);
+            pmBox.scrollTop = pmBox.scrollHeight;
+        });
+    }
 
-        function goToRooms() {
-            document.getElementById("chat-screen").classList.remove("active");
-            document.getElementById("rooms-screen").classList.add("active");
-            document.getElementById("appTitle").innerText = "WorldChat Rooms";
-            document.getElementById("backBtn").style.display = "none";
-            if (messageListener) {
-                db.ref("rooms/" + currentRoom).off("child_added", messageListener);
-            }
-        }
+    function sendPrivateMsg() {
+        const pmInput = document.getElementById('pmInput');
+        const text = pmInput.value.trim();
+        if(!text || !activePrivateChat) return;
 
-        function loadMessages() {
-            const chatBox = document.getElementById("chatBox");
-            chatBox.innerHTML = "";
+        db.ref(`private_chats/${activePrivateChat.chatId}`).push({
+            sender: currentUser.name,
+            text: text
+        });
+        pmInput.value = "";
+    }
 
-            if (messageListener) {
-                db.ref("rooms/" + currentRoom).off("child_added", messageListener);
-            }
+    function closePrivateChat() {
+        document.getElementById('privateChatWindow').style.display = 'none';
+    }
 
-            messageListener = db.ref("rooms/" + currentRoom).limitToLast(100).on("child_added", (snapshot) => {
-                const msg = snapshot.val();
-                appendMessage(msg);
-            });
-        }
-
-        function sendMessage() {
-            const input = document.getElementById("messageInput");
-            const text = input.value.trim();
-            if (!text) return;
-
-            db.ref("rooms/" + currentRoom).push({
-                sender: currentUser,
-                text: text,
-                timestamp: Date.now()
-            });
-            input.value = "";
-        }
-
-        function checkEnter(e) {
-            if (e.key === "Enter") {
-                sendMessage();
-            }
-        }
-
-        function appendMessage(msg) {
-            const chatBox = document.getElementById("chatBox");
-            const isSelf = msg.sender === currentUser;
-
-            const row = document.createElement("div");
-            row.className = `message-row ${isSelf ? 'self' : ''}`;
-
-            const avatarText = msg.sender ? msg.sender.substring(0, 2).toUpperCase() : "U";
-
-            row.innerHTML = `
-                <div class="avatar">${avatarText}</div>
-                <div class="bubble">
-                    ${!isSelf ? `<div class="sender-name">${msg.sender}</div>` : ''}
-                    <div>${msg.text}</div>
-                </div>
-            `;
-
-            chatBox.appendChild(row);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
-
-            if (tabName === 'rooms') {
-                document.getElementById("rooms-screen").classList.add("active");
-                document.getElementById("appTitle").innerText = "WorldChat Rooms";
-                document.getElementById("backBtn").style.display = "none";
-            } else if (tabName === 'chat') {
-                document.getElementById("chat-screen").classList.add("active");
-                document.getElementById("appTitle").innerText = `${currentRoom} - ${currentUser}`;
-                document.getElementById("backBtn").style.display = "inline-block";
-            } else if (tabName === 'people') {
-                document.getElementById("people-screen").classList.add("active");
-                document.getElementById("appTitle").innerText = "WorldChat People";
-                document.getElementById("backBtn").style.display = "none";
-            } else if (tabName === 'apps') {
-                document.getElementById("apps-screen").classList.add("active");
-                document.getElementById("appTitle").innerText = "WorldChat Mini Apps";
-                document.getElementById("backBtn").style.display = "none";
-            }
-
-            event.currentTarget.classList.add('active');
-        }
-
-        function toggleModal(id) {
-            const modal = document.getElementById(id);
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        }
-    </script>
+    document.getElementById('msgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+</script>
 </body>
 </html>
