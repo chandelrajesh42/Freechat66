@@ -1,218 +1,330 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WorldChat</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
-    
-    /* Top Header */
-    .top-header { background: #fff; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 10; }
-    .header-title { font-size: 18px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 8px; }
-    .header-actions { display: flex; gap: 15px; color: #555; font-size: 18px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorldChat</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Top Header */
+        .top-header { background: #fff; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 10; }
+        .header-title { font-size: 18px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 8px; }
+        .header-actions { display: flex; gap: 15px; color: #555; font-size: 18px; }
 
-    /* Main Container */
-    .main-content { flex: 1; overflow-y: auto; padding-bottom: 60px; }
-    .tab-page { display: none; padding: 15px; }
-    .tab-page.active { display: block; }
+        /* Screens/Views */
+        .screen { flex: 1; display: none; flex-direction: column; overflow: hidden; padding-bottom: 60px; }
+        .screen.active { display: flex; }
 
-    /* Chat Messages */
-    .chat-container { display: flex; flex-direction: column; gap: 10px; padding: 10px; }
-    .message-row { display: flex; gap: 10px; align-items: flex-end; }
-    .message-row.self { flex-direction: row-reverse; }
-    .avatar { width: 35px; height: 35px; border-radius: 50%; background: #00bcd4; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; }
-    .bubble { max-width: 70%; padding: 8px 12px; border-radius: 15px; font-size: 14px; position: relative; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-    .message-row.self .bubble { background: #e3f2fd; color: #000; }
-    .sender-name { font-size: 11px; color: #888; margin-bottom: 2px; }
-    .status-tick { font-size: 10px; color: #2196f3; margin-left: 5px; }
+        /* Setup Screen */
+        #setup-screen { justify-content: center; align-items: center; padding: 20px; background: #fff; }
+        .setup-card { width: 100%; max-width: 400px; padding: 30px; background: #f9f9f9; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
+        .setup-card h2 { margin-bottom: 20px; color: #333; }
+        .setup-card input, .setup-card select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
+        .setup-card button { width: 100%; padding: 12px; background: #00bcd4; color: #white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
 
-    /* Bottom Input Bar */
-    .input-bar { position: fixed; bottom: 55px; left: 0; right: 0; background: #fff; padding: 8px; display: flex; align-items: center; gap: 8px; border-top: 1px solid #e0e0e0; }
-    .input-bar input { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #ddd; outline: none; background: #f5f5f5; }
-    .input-bar button { background: none; border: none; color: #00bcd4; font-size: 20px; cursor: pointer; padding: 0 5px; }
+        /* Chat Rooms List */
+        .rooms-container { padding: 15px; overflow-y: auto; flex: 1; }
+        .room-item { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
+        .room-info h4 { font-size: 16px; color: #333; margin-bottom: 3px; }
+        .room-info p { font-size: 12px; color: #888; }
 
-    /* Bottom Navigation Tabs */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 55px; background: #fff; display: flex; border-top: 1px solid #ddd; }
-    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #777; gap: 3px; cursor: pointer; }
-    .nav-item.active { color: #00bcd4; font-weight: bold; }
-    .nav-item i { font-size: 18px; }
+        /* Chat Box Interface */
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f7f9fa; }
+        .message-row { display: flex; gap: 10px; align-items: flex-end; }
+        .message-row.self { flex-direction: row-reverse; }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; background: #00bcd4; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; }
+        .bubble { max-width: 70%; padding: 10px 14px; border-radius: 15px; font-size: 14px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; }
+        .message-row.self .bubble { background: #dcf8c6; }
+        .sender-name { font-size: 11px; color: #888; margin-bottom: 2px; }
 
-    /* Modals */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-end; }
-    .modal-content { background: #fff; width: 100%; padding: 20px; border-radius: 15px 15px 0 0; }
-    .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 15px; margin-top: 15px; }
-    .btn-primary { background: none; border: none; color: #00bcd4; font-weight: bold; cursor: pointer; }
+        /* Input Footer */
+        .chat-input-bar { padding: 10px; background: #fff; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd; position: fixed; bottom: 55px; left: 0; right: 0; }
+        .chat-input-bar input { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #ddd; outline: none; background: #f5f5f5; }
+        .chat-input-bar button { background: #00bcd4; color: #white; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
 
-    /* App Cards */
-    .app-card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .app-card h4 { margin-bottom: 5px; color: #333; }
-    .app-card p { font-size: 12px; color: #666; margin-bottom: 10px; }
-    .app-card button { background: #fff; border: 1px solid #00bcd4; color: #00bcd4; padding: 5px 15px; border-radius: 15px; font-weight: bold; }
-  </style>
+        /* Bottom Nav Bar */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 55px; background: #fff; display: flex; border-top: 1px solid #ddd; z-index: 100; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #777; gap: 3px; cursor: pointer; }
+        .nav-item.active { color: #00bcd4; font-weight: bold; }
+        .nav-item i { font-size: 18px; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; }
+        .modal-content { background: #fff; width: 100%; padding: 20px; border-radius: 15px 15px 0 0; }
+        .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+        .btn-primary { background: #00bcd4; color: #white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; float: right; }
+    </style>
 </head>
 <body>
 
-  <!-- Top Bar -->
-  <div class="top-header">
-    <div class="header-title" id="headerTitle"><i class="fa-solid fa-angle-left"></i> WorldChat <span style="font-size: 12px; color: #4caf50;">Online</span></div>
-    <div class="header-actions">
-      <i class="fa-solid fa-phone"></i>
-      <i class="fa-solid fa-video"></i>
-      <i class="fa-solid fa-gear" onclick="toggleModal('prefModal')"></i>
-    </div>
-  </div>
-
-  <!-- Main View Windows -->
-  <div class="main-content">
-    
-    <!-- Chat Screen Tab -->
-    <div id="tab-messages" class="tab-page active">
-      <div class="chat-container" id="chatBox"></div>
-    </div>
-
-    <!-- People Tab -->
-    <div id="tab-people" class="tab-page">
-      <p style="padding: 10px; color: #666;">SEARCH PEOPLE</p>
-      <input type="text" placeholder="Search people on WorldChat..." style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px;">
-      <p style="color: #999; text-align: center; margin-top: 20px;">Your friend list is empty</p>
-    </div>
-
-    <!-- Mini Apps Tab -->
-    <div id="tab-apps" class="tab-page">
-      <h3 style="margin-bottom: 15px;">WorldChat Mini Apps</h3>
-      <div class="app-card">
-        <h4>🌐 WorldChat Web App</h4>
-        <p>Instantly converts WorldChat to a lite web app and adds it to your home screen.</p>
-        <button>WEB APP</button>
-      </div>
-      <div class="app-card">
-        <h4>🎮 Minesweeper</h4>
-        <p>Achieve high scores with other WorldChat users!</p>
-        <button>PLAY MINES</button>
-      </div>
-      <div class="app-card">
-        <h4>🎨 WorldChat Draw</h4>
-        <p>You can draw together with your friends on WorldChat Draw.</p>
-        <button>OPEN DRAW</button>
-      </div>
-      <div class="app-card">
-        <h4>📺 WorldChat Watch</h4>
-        <p>Watch videos together with room members.</p>
-        <button>WATCH TOGETHER</button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Message Input -->
-  <div class="input-bar" id="inputBar">
-    <i class="fa-regular fa-face-smile"></i>
-    <input type="text" id="messageInput" placeholder="Type a message...">
-    <i class="fa-solid fa-microphone"></i>
-    <i class="fa-solid fa-camera"></i>
-    <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
-  </div>
-
-  <!-- Navigation Bar -->
-  <div class="bottom-nav">
-    <div class="nav-item" onclick="switchTab('memes')"><i class="fa-solid fa-fire"></i>MEMES</div>
-    <div class="nav-item" onclick="switchTab('rooms')"><i class="fa-solid fa-house"></i>ROOMS</div>
-    <div class="nav-item active" onclick="switchTab('messages')"><i class="fa-solid fa-comment-dots"></i>MESSAGES</div>
-    <div class="nav-item" onclick="switchTab('people')"><i class="fa-solid fa-user-group"></i>PEOPLE</div>
-    <div class="nav-item" onclick="switchTab('apps')"><i class="fa-solid fa-border-all"></i>APPS</div>
-  </div>
-
-  <!-- Quick Preferences Modal -->
-  <div class="modal" id="prefModal">
-    <div class="modal-content">
-      <div class="modal-title">Quick Preferences</div>
-      <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Tweak your WorldChat settings</p>
-      <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-        <span>Notification Sounds</span>
-        <input type="checkbox" checked>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-primary" onclick="toggleModal('prefModal')">SAVE</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      databaseURL: "YOUR_DATABASE_URL",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.database();
-    const currentUser = "User_" + Math.floor(Math.random() * 1000);
-
-    db.ref("global_chat").limitToLast(100).on("child_added", (snapshot) => {
-      const msg = snapshot.val();
-      appendMessage(msg);
-    });
-
-    function sendMessage() {
-      const input = document.getElementById("messageInput");
-      const text = input.value.trim();
-      if (!text) return;
-
-      db.ref("global_chat").push({
-        sender: currentUser,
-        text: text,
-        timestamp: Date.now()
-      });
-      input.value = "";
-    }
-
-    function appendMessage(msg) {
-      const box = document.getElementById("chatBox");
-      const isSelf = msg.sender === currentUser;
-      
-      const row = document.createElement("div");
-      row.className = `message-row ${isSelf ? 'self' : ''}`;
-      
-      const avatarText = msg.sender.substring(0, 3).toUpperCase();
-      
-      row.innerHTML = `
-        <div class="avatar">${avatarText}</div>
-        <div class="bubble">
-          ${!isSelf ? `<div class="sender-name">${msg.sender}</div>` : ''}
-          <div>${msg.text} <i class="fa-solid fa-check status-tick"></i></div>
+    <!-- Top Header Bar -->
+    <div class="top-header">
+        <div class="header-title" id="headerTitle">
+            <i class="fa-solid fa-angle-left" id="backBtn" style="display:none; cursor:pointer;" onclick="goToRooms()"></i> 
+            <span id="appTitle">WorldChat</span>
+            <span style="font-size: 11px; color: #4caf50;" id="onlineStatus">Online</span>
         </div>
-      `;
-      
-      box.appendChild(row);
-      box.scrollTop = box.scrollHeight;
-    }
+        <div class="header-actions">
+            <i class="fa-solid fa-phone"></i>
+            <i class="fa-solid fa-video"></i>
+            <i class="fa-solid fa-gear" onclick="toggleModal('prefModal')"></i>
+        </div>
+    </div>
 
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      
-      const selectedTab = document.getElementById(`tab-${tabName}`);
-      if (selectedTab) selectedTab.classList.add('active');
-      
-      if(event) event.currentTarget.classList.add('active');
-    }
+    <!-- 1. Setup Screen (Login) -->
+    <div id="setup-screen" class="screen active">
+        <div class="setup-card">
+            <h2>Welcome to WorldChat</h2>
+            <input type="text" id="usernameInput" placeholder="Enter your name...">
+            <select id="roomSelect">
+                <option value="India">🇮🇳 India Chatroom</option>
+                <option value="Global">🌍 Global Chatroom</option>
+                <option value="Gamers">🎮 Gamers Lounge</option>
+            </select>
+            <button onclick="startChat()">Start Chatting</button>
+        </div>
+    </div>
 
-    function toggleModal(id) {
-      const modal = document.getElementById(id);
-      modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-    }
-  </script>
+    <!-- 2. Rooms / Main Lobby Screen -->
+    <div id="rooms-screen" class="screen">
+        <div class="rooms-container" id="roomsList">
+            <div class="room-item" onclick="joinRoom('India')">
+                <div class="room-info">
+                    <h4>🇮🇳 India Chatroom</h4>
+                    <p>Public room for everyone</p>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color: #bbb;"></i>
+            </div>
+            <div class="room-item" onclick="joinRoom('Global')">
+                <div class="room-info">
+                    <h4>🌍 Global Chatroom</h4>
+                    <p>Connect with people worldwide</p>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color: #bbb;"></i>
+            </div>
+            <div class="room-item" onclick="joinRoom('Gamers')">
+                <div class="room-info">
+                    <h4>🎮 Gamers Lounge</h4>
+                    <p>Talk about gaming and setup</p>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color: #bbb;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Active Chat Screen -->
+    <div id="chat-screen" class="screen">
+        <div class="chat-messages" id="chatBox"></div>
+        <div class="chat-input-bar">
+            <i class="fa-regular fa-face-smile" style="font-size: 20px; color: #777;"></i>
+            <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="checkEnter(event)">
+            <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- 4. People Screen -->
+    <div id="people-screen" class="screen" style="padding: 15px;">
+        <h3 style="margin-bottom: 15px;">People</h3>
+        <input type="text" placeholder="Search people..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+        <p style="color: #888; text-align: center; margin-top: 30px;">Your friend list is empty</p>
+    </div>
+
+    <!-- 5. Mini Apps Screen -->
+    <div id="apps-screen" class="screen" style="padding: 15px; overflow-y: auto;">
+        <h3 style="margin-bottom: 15px;">WorldChat Mini Apps</h3>
+        <div style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <h4>🌐 Web App Link</h4>
+            <p style="font-size: 12px; color: #666; margin: 5px 0 10px 0;">Add WorldChat directly to your home screen.</p>
+            <button style="background:none; border:1px solid #00bcd4; color:#00bcd4; padding:5px 15px; border-radius:15px; font-weight:bold;">WEB APP</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="switchTab('rooms')"><i class="fa-solid fa-house"></i>ROOMS</div>
+        <div class="nav-item active" id="navChat" onclick="switchTab('chat')"><i class="fa-solid fa-comment-dots"></i>MESSAGES</div>
+        <div class="nav-item" onclick="switchTab('people')"><i class="fa-solid fa-user-group"></i>PEOPLE</div>
+        <div class="nav-item" onclick="switchTab('apps')"><i class="fa-solid fa-border-all"></i>APPS</div>
+    </div>
+
+    <!-- Quick Preferences Modal -->
+    <div class="modal" id="prefModal">
+        <div class="modal-content">
+            <div class="modal-title">Quick Preferences</div>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Tweak your WorldChat settings</p>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <span>Notification Sounds</span>
+                <input type="checkbox" checked>
+            </div>
+            <button class="btn-primary" onclick="toggleModal('prefModal')">SAVE</button>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Config Setup (Aapka apna config yahan rahega)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        let currentUser = localStorage.getItem("chat_user") || "";
+        let currentRoom = localStorage.getItem("chat_room") || "India";
+        let messageListener = null;
+
+        // Auto-login check
+        window.onload = function() {
+            if (currentUser) {
+                document.getElementById("setup-screen").classList.remove("active");
+                document.getElementById("chat-screen").classList.add("active");
+                document.getElementById("appTitle").innerText = `${currentRoom} - ${currentUser}`;
+                document.getElementById("backBtn").style.display = "inline-block";
+                loadMessages();
+            }
+        };
+
+        function startChat() {
+            const nameInput = document.getElementById("usernameInput").value.trim();
+            const roomDropdown = document.getElementById("roomSelect").value;
+            
+            if (!nameInput) {
+                alert("Please enter your name!");
+                return;
+            }
+
+            currentUser = nameInput;
+            currentRoom = roomDropdown;
+            
+            localStorage.setItem("chat_user", currentUser);
+            localStorage.setItem("chat_room", currentRoom);
+
+            document.getElementById("setup-screen").classList.remove("active");
+            document.getElementById("chat-screen").classList.add("active");
+            document.getElementById("appTitle").innerText = `${currentRoom} - ${currentUser}`;
+            document.getElementById("backBtn").style.display = "inline-block";
+
+            loadMessages();
+        }
+
+        function joinRoom(roomName) {
+            currentRoom = roomName;
+            localStorage.setItem("chat_room", currentRoom);
+            document.getElementById("rooms-screen").classList.remove("active");
+            document.getElementById("chat-screen").classList.add("active");
+            document.getElementById("appTitle").innerText = `${currentRoom} - ${currentUser}`;
+            document.getElementById("backBtn").style.display = "inline-block";
+            loadMessages();
+        }
+
+        function goToRooms() {
+            document.getElementById("chat-screen").classList.remove("active");
+            document.getElementById("rooms-screen").classList.add("active");
+            document.getElementById("appTitle").innerText = "WorldChat Rooms";
+            document.getElementById("backBtn").style.display = "none";
+            if (messageListener) {
+                db.ref("rooms/" + currentRoom).off("child_added", messageListener);
+            }
+        }
+
+        function loadMessages() {
+            const chatBox = document.getElementById("chatBox");
+            chatBox.innerHTML = "";
+
+            if (messageListener) {
+                db.ref("rooms/" + currentRoom).off("child_added", messageListener);
+            }
+
+            messageListener = db.ref("rooms/" + currentRoom).limitToLast(100).on("child_added", (snapshot) => {
+                const msg = snapshot.val();
+                appendMessage(msg);
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("messageInput");
+            const text = input.value.trim();
+            if (!text) return;
+
+            db.ref("rooms/" + currentRoom).push({
+                sender: currentUser,
+                text: text,
+                timestamp: Date.now()
+            });
+            input.value = "";
+        }
+
+        function checkEnter(e) {
+            if (e.key === "Enter") {
+                sendMessage();
+            }
+        }
+
+        function appendMessage(msg) {
+            const chatBox = document.getElementById("chatBox");
+            const isSelf = msg.sender === currentUser;
+
+            const row = document.createElement("div");
+            row.className = `message-row ${isSelf ? 'self' : ''}`;
+
+            const avatarText = msg.sender ? msg.sender.substring(0, 2).toUpperCase() : "U";
+
+            row.innerHTML = `
+                <div class="avatar">${avatarText}</div>
+                <div class="bubble">
+                    ${!isSelf ? `<div class="sender-name">${msg.sender}</div>` : ''}
+                    <div>${msg.text}</div>
+                </div>
+            `;
+
+            chatBox.appendChild(row);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
+
+            if (tabName === 'rooms') {
+                document.getElementById("rooms-screen").classList.add("active");
+                document.getElementById("appTitle").innerText = "WorldChat Rooms";
+                document.getElementById("backBtn").style.display = "none";
+            } else if (tabName === 'chat') {
+                document.getElementById("chat-screen").classList.add("active");
+                document.getElementById("appTitle").innerText = `${currentRoom} - ${currentUser}`;
+                document.getElementById("backBtn").style.display = "inline-block";
+            } else if (tabName === 'people') {
+                document.getElementById("people-screen").classList.add("active");
+                document.getElementById("appTitle").innerText = "WorldChat People";
+                document.getElementById("backBtn").style.display = "none";
+            } else if (tabName === 'apps') {
+                document.getElementById("apps-screen").classList.add("active");
+                document.getElementById("appTitle").innerText = "WorldChat Mini Apps";
+                document.getElementById("backBtn").style.display = "none";
+            }
+
+            event.currentTarget.classList.add('active');
+        }
+
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+    </script>
 </body>
 </html>
